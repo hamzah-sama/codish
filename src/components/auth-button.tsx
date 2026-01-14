@@ -1,12 +1,14 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
+import { SignInButton, UserButton } from "@clerk/nextjs";
+import { Authenticated, AuthLoading, Unauthenticated } from "convex/react";
+import { LoadingSpinner } from "./loading-spinner";
 
 export const AuthButton = () => {
   return (
     <>
-      <SignedOut>
+      <Unauthenticated>
         <SignInButton mode="modal">
           <Button
             variant="outline"
@@ -15,10 +17,13 @@ export const AuthButton = () => {
             Sign in
           </Button>
         </SignInButton>
-      </SignedOut>
-      <SignedIn>
+      </Unauthenticated>
+      <Authenticated>
         <UserButton />
-      </SignedIn>
+      </Authenticated>
+      <AuthLoading>
+        <LoadingSpinner />
+      </AuthLoading>
     </>
   );
 };

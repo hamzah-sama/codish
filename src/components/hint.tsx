@@ -16,7 +16,7 @@ export const Hint = ({ children, text, side, align }: Props) => {
   return (
     <Tooltip >
       <TooltipTrigger asChild>{children}</TooltipTrigger>
-      <TooltipContent side={side} align={align} className="max-w-100">
+      <TooltipContent side={side} align={align} className="max-w-sm">
         <p>{text}</p>
       </TooltipContent>
     </Tooltip>
