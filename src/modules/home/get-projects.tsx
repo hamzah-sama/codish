@@ -1,11 +1,11 @@
 import Link from "next/link";
-import { Doc } from "../../../../convex/_generated/dataModel";
 import {
   ArrowRightIcon,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { getIcon } from "./get-projects-icon";
+import { Doc } from "../../../convex/_generated/dataModel";
 
 interface Props {
   project: Doc<"projects">;

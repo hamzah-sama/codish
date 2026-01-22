@@ -21,7 +21,7 @@ interface Props {
   onOpenChange: (open: boolean) => void;
 }
 
-export const UnathorizedDialog = ({ open, onOpenChange }: Props) => {
+export const UnauthorizedDialog = ({ open, onOpenChange }: Props) => {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>

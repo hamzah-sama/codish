@@ -1,4 +1,4 @@
-import { HomeView } from "@/modules/home/components/home-view";
+import { HomeView } from "@/modules/home/home-view";
 
 const Page = () => {
   return <HomeView />;
