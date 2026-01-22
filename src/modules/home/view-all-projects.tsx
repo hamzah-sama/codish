@@ -6,22 +6,22 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { Doc } from "../../../../convex/_generated/dataModel";
 import { useRouter } from "next/navigation";
 import { getIcon } from "./get-projects-icon";
+import { Doc } from "../../../convex/_generated/dataModel";
 
 interface Props {
   open: boolean;
-  onOPenChange: (open: boolean) => void;
+  onOpenChange: (open: boolean) => void;
   projects: Doc<"projects">[];
 }
 
-export const ViewAllProjects = ({ open, onOPenChange, projects }: Props) => {
+export const ViewAllProjects = ({ open, onOpenChange, projects }: Props) => {
   const router = useRouter();
 
   return (
-    <CommandDialog open={open} onOpenChange={onOPenChange} title="all projects">
-      <CommandInput placeholder="Seach projects..." />
+    <CommandDialog open={open} onOpenChange={onOpenChange} title="all projects">
+      <CommandInput placeholder="Search projects..." />
       <CommandList>
         <CommandEmpty>No projects found</CommandEmpty>
         <CommandGroup heading="Projects">
@@ -31,7 +31,7 @@ export const ViewAllProjects = ({ open, onOPenChange, projects }: Props) => {
               value={`${project.name}-${project._id}`}
               onSelect={() => {
                 router.push(`/projects/${project._id}`);
-                onOPenChange(false);
+                onOpenChange(false);
               }}
             >
               {getIcon(project.importStatus)}

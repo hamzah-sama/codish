@@ -14,7 +14,7 @@ const Theme = () => {
       text={theme === "dark" ? "Switch to light Mode" : "Switch to dark Mode"}
     >
       <Button
-        variant="outline"
+        variant="ghost"
         size="icon"
         onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
       >

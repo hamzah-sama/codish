@@ -1,7 +1,5 @@
 import { Button } from "@/components/ui/button";
 import { useUser } from "@clerk/nextjs";
-import { useMutation } from "convex/react";
-import { api } from "../../../../convex/_generated/api";
 import { SparkleIcon } from "lucide-react";
 import { Kbd } from "@/components/ui/kbd";
 import {
@@ -10,7 +8,7 @@ import {
   colors,
   uniqueNamesGenerator,
 } from "unique-names-generator";
-import { Id } from "../../../../convex/_generated/dataModel";
+import { useCreateProjects } from "../utils/useProject";
 
 interface Props {
   setOpenDialog: (open: boolean) => void;
@@ -18,24 +16,7 @@ interface Props {
 
 export const CreateProject = ({ setOpenDialog }: Props) => {
   const { isSignedIn } = useUser();
-  const createProjects = useMutation(api.projects.create).withOptimisticUpdate(
-    (localStore, args) => {
-      const existingProjects = localStore.getQuery(api.projects.getAll);
-      if (existingProjects !== undefined) {
-        const newProject = {
-          _id: crypto.randomUUID() as Id<"projects">,
-          name: args.name,
-          ownerId: "anonymous",
-          updatedAt: Date.now(),
-          _creationTime: Date.now(),
-        };
-        localStore.setQuery(api.projects.getAll, {}, [
-          newProject,
-          ...existingProjects,
-        ]);
-      }
-    },
-  );
+  const createProject = useCreateProjects();
 
   const handleSubmit = async () => {
     if (!isSignedIn) {
@@ -47,7 +28,7 @@ export const CreateProject = ({ setOpenDialog }: Props) => {
       separator: "-",
       length: 3,
     });
-    await createProjects({ name: projectName });
+    await createProject({ name: projectName });
   };
   return (
     <Button

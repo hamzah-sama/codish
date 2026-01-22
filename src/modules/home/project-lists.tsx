@@ -1,20 +1,22 @@
-import { useQuery } from "convex/react";
-import { api } from "../../../../convex/_generated/api";
 import { Spinner } from "@/components/ui/spinner";
 import { Kbd } from "@/components/ui/kbd";
 import { MostRecentProject, RestProjects } from "./get-projects";
 import { ViewAllProjects } from "./view-all-projects";
+import { useGetAllProjects, useGetPartialProjects } from "../utils/useProject";
 
 interface Props {
   openViewAllProject: boolean;
   setOpenViewAllProject: (open: boolean) => void;
 }
 
-export const ProjectList = ({openViewAllProject, setOpenViewAllProject} : Props) => {
-  const partialProjects = useQuery(api.projects.getPartial, { limit: 6 });
-  const AllProjects = useQuery(api.projects.getAll);
+export const ProjectList = ({
+  openViewAllProject,
+  setOpenViewAllProject,
+}: Props) => {
+  const partialProjects = useGetPartialProjects(6);
+  const allProjects = useGetAllProjects();
 
-  if (partialProjects === undefined || AllProjects === undefined) {
+  if (partialProjects === undefined || allProjects === undefined) {
     return (
       <div className="flex items-center justify-center">
         <Spinner className="size-4 text-ring" />
@@ -27,8 +29,8 @@ export const ProjectList = ({openViewAllProject, setOpenViewAllProject} : Props)
     <>
       <ViewAllProjects
         open={openViewAllProject}
-        onOPenChange={setOpenViewAllProject}
-        projects={AllProjects}
+        onOpenChange={setOpenViewAllProject}
+        projects={allProjects}
       />
       <div className="flex flex-col gap-4">
         {mostRecentProject && <MostRecentProject project={mostRecentProject} />}

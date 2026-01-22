@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { UnathorizedDialog } from "@/components/unathorized-dialog";
+import { UnauthorizedDialog } from "@/components/unauthorized-dialog";
 import { Poppins } from "next/font/google";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -35,8 +35,8 @@ export const HomeView = () => {
 
   return (
     <>
-      <UnathorizedDialog open={openDialog} onOpenChange={setOpenDialog} />
-      <div className="flex flex-col justify-center items-center h-full p-6 md:p-16  bg-sidebar">
+      <UnauthorizedDialog open={openDialog} onOpenChange={setOpenDialog} />
+      <div className="flex flex-col justify-center items-center h-full p-6 md:p-16">
         <div className="flex flex-col w-full max-w-sm mx-auto items-center gap-4">
           <div className="flex items-center justify-between gap-4 w-full">
             <div className="flex items-center gap-2 w-full group/logo">
