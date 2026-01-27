@@ -34,11 +34,11 @@ export const CreateProject = ({ setOpenDialog }: Props) => {
     <Button
       onClick={handleSubmit}
       variant="outline"
-      className="h-full flex flex-col justify-start items-start p-4  gap-6 bg-background border rounded-none"
+      className="h-full flex flex-col justify-start items-start p-4  gap-6 bg-background border rounded-none cursor-pointer"
     >
       <div className="flex items-center justify-between w-full">
         <SparkleIcon className="size-4" />
-        <Kbd className="border">⌘J</Kbd>
+        <Kbd className="border">ctrl+J</Kbd>
       </div>
       <div>
         <span className="text-sm">New Project</span>

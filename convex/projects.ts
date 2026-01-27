@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { verifyAuth } from "./verify.auth";
+import { verifyAuth, verifyAuthAndOwnership } from "./utils";
 
 // Query section
 export const getPartial = query({
@@ -36,12 +36,7 @@ export const getAll = query({
 export const getProjectById = query({
   args: { id: v.id("projects") },
   handler: async (ctx, args) => {
-    const identity = await verifyAuth(ctx);
-    const project = await ctx.db.get("projects", args.id);
-    if (!project) return null;
-    if (project.ownerId !== identity.subject) {
-      throw new Error("You are not the owner of this project");
-    }
+    const project = await verifyAuthAndOwnership(ctx, args.id);
     return project;
   },
 });
@@ -49,12 +44,7 @@ export const getProjectById = query({
 export const getProjectName = query({
   args: { id: v.id("projects") },
   handler: async (ctx, args) => {
-    const identity = await verifyAuth(ctx);
-    const project = await ctx.db.get("projects", args.id);
-    if (!project) return null;
-    if (project.ownerId !== identity.subject) {
-      throw new Error("You are not the owner of this project");
-    }
+    const project = await verifyAuthAndOwnership(ctx, args.id);
     return project.name;
   },
 });
@@ -62,12 +52,7 @@ export const getProjectName = query({
 export const getProjectStatus = query({
   args: { id: v.id("projects") },
   handler: async (ctx, args) => {
-    const identity = await verifyAuth(ctx);
-    const project = await ctx.db.get("projects", args.id);
-    if (!project) return null;
-    if (project.ownerId !== identity.subject) {
-      throw new Error("You are not the owner of this project");
-    }
+    const project = await verifyAuthAndOwnership(ctx, args.id);
     return { status: project.importStatus, updatedAt: project.updatedAt };
   },
 });
@@ -90,12 +75,7 @@ export const create = mutation({
 export const renameProject = mutation({
   args: { id: v.id("projects"), name: v.string() },
   handler: async (ctx, args) => {
-    const identity = await verifyAuth(ctx);
-    const project = await ctx.db.get("projects", args.id);
-    if (!project) return null;
-    if (project.ownerId !== identity.subject) {
-      throw new Error("You are not the owner of this project");
-    }
+    const project = await verifyAuthAndOwnership(ctx, args.id);
     await ctx.db.patch(project._id, { name: args.name, updatedAt: Date.now() });
   },
 });

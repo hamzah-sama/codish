@@ -5,7 +5,7 @@ import { AuthButton } from "@/components/auth-button";
 
 export const HomeNavbar = () => {
   return (
-    <nav className="fixed top-0 right-0 left-0 w-full flex items-center px-4 pr-5 bg-background z-50 h-12">
+    <nav className="flex items-center px-4 pr-5 bg-background">
       <div className="flex items-center w-full gap-4 justify-between">
         <div className="flex items-center shrink-0 ">
           <Link href="/" className="flex items-center gap-1 p-2">
@@ -15,7 +15,6 @@ export const HomeNavbar = () => {
             </span>
           </Link>
         </div>
-
         <div className="flex items-center gap-4 shrink-0">
           <ThemeToggle />
           <AuthButton />

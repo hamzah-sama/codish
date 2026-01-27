@@ -53,7 +53,7 @@ export const ProjectName = ({ projectId }: Props) => {
           onChange={(e) => setName(e.target.value)}
           onFocus={(e) => e.currentTarget.select()}
           onBlur={() => setOpenInput(false)}
-          className="text-sm bg-transparent text-foreground outline-none focus:ring-1 focus:ring-inset focus:ring-ring max-w-40 truncate font-medium p-2"
+          className="text-sm bg-transparent text-foreground outline-none focus:ring-1 focus:ring-inset focus:ring-ring max-w-40 truncate font-medium p-1 pl-2"
         />
       ) : (
         <BreadcrumbPage>
