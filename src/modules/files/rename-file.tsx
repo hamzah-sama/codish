@@ -6,7 +6,7 @@ import { setPadding } from "./utils/set-padding";
 interface Props {
   fileId: Id<"files">;
   projectId: Id<"projects">;
-  parentId: Id<"files">;
+  parentId?: Id<"files">;
   projectName: string;
   setOpenInput: (open: boolean) => void;
   openInput: boolean;

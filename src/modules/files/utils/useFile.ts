@@ -89,9 +89,7 @@ export const useDeleteFile = ({
         localStore.setQuery(
           api.files.getFolderContents,
           { projectId, parentId },
-          existing.filter((file) => {
-            file._id !== args.fileId;
-          }),
+          existing.filter((file) => file._id !== args.fileId),
         );
       }
     },
@@ -103,7 +101,7 @@ export const useRenameFile = ({
   parentId,
 }: {
   projectId: Id<"projects">;
-  parentId: Id<"files">;
+  parentId?: Id<"files">;
 }) => {
   return useMutation(api.files.rename).withOptimisticUpdate(
     (localStore, args) => {

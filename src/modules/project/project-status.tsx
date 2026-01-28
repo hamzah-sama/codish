@@ -22,7 +22,7 @@ export const ProjectStatus = ({ projectId }: Props) => {
         <Hint
           text={
             project?.updatedAt ? (
-              `save ${formatDistanceToNow(project?.updatedAt, { addSuffix: true })}`
+              `saved ${formatDistanceToNow(project?.updatedAt, { addSuffix: true })}`
             ) : (
               <Spinner />
             )

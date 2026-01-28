@@ -25,7 +25,12 @@ export const getFolderContents = query({
       )
       .collect();
 
-    return files.sort((a, b) => {
+    const visibleFiles = files.filter(
+      (f): f is typeof f & { type: "file" | "folder" } =>
+        f.type === "file" || f.type === "folder",
+    );
+
+    return visibleFiles.sort((a, b) => {
       if (a.type === "folder" && b.type === "file") return -1;
       if (a.type === "file" && b.type === "folder") return 1;
       return a.name.localeCompare(b.name);
@@ -131,7 +136,9 @@ export const deleteById = mutation({
     await verifyAuthAndOwnership(ctx, file.projectId);
 
     const recursivelyDelete = async (fileId: Id<"files">) => {
-      if (file.type === "folder") {
+      const currentFile = await ctx.db.get(fileId);
+      if (!currentFile) return;
+      if (currentFile.type === "folder") {
         const children = await ctx.db
           .query("files")
           .withIndex("by_parent", (q) => q.eq("parentId", fileId))
@@ -141,14 +148,13 @@ export const deleteById = mutation({
         }
       }
 
-      await ctx.db.delete("files", fileId);
+      if (currentFile.storageId) {
+        await ctx.storage.delete(currentFile.storageId);
+      }
+      await ctx.db.delete(fileId);
     };
 
     await recursivelyDelete(file._id);
-
-    if (file.storageId) {
-      await ctx.storage.delete(file.storageId);
-    }
 
     await updateProjectsTimestamp(ctx, file.projectId);
   },

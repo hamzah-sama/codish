@@ -115,7 +115,7 @@ export const FileExplorerView = ({ projectId }: Props) => {
           <div className="flex flex-col gap-0.5">
             {rootFile === undefined && <LoadingRow level={0} />}
             {rootFile?.map((file) => (
-              <Tree key={`${file._id}}-${collapseKey}`} file={file} level={0} />
+              <Tree key={`${file._id}-${collapseKey}`} file={file} level={0} />
             ))}
           </div>
         )}

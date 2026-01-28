@@ -1,10 +1,6 @@
-import { FileIcon } from "@react-symbols/icons/utils";
 import { Doc } from "../../../convex/_generated/dataModel";
-import { setPadding } from "./utils/set-padding";
-import { number } from "framer-motion";
 import { ChevronRightIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ProjectName } from "../project/project-name";
 import { Spinner } from "@/components/ui/spinner";
 import React, { useState } from "react";
 import { TreeItemWrapper } from "./tree-item-wrapper";
@@ -14,7 +10,6 @@ import {
   useDeleteFile,
   useGetFolderContents,
 } from "./utils/useFile";
-import { createFile } from "../../../convex/files";
 import { CreateInput } from "./create-input";
 import { LoadingRow } from "./loading-row";
 import { DeleteConfirmationModal } from "@/components/confirmation-modal";
@@ -30,13 +25,18 @@ export const Tree = ({ level, file }: Props) => {
   const [isOpenFolder, setIsOpenFolder] = useState(false);
   const [openDeleteModal, setOPenDeleteModal] = useState(false);
   const [creating, setCreating] = useState<"file" | "folder" | null>(null);
+  const [renaming, setRenaming] = useState(false);
   const deleteFile = useDeleteFile({
     projectId: file.projectId,
     parentId: file._id,
   });
+  const folderContent = useGetFolderContents({
+    projectId: file.projectId,
+    parentId: file._id,
+    enabled: isOpenFolder && file.type === "folder",
+  });
   const createFile = useCreateFile();
   const createFolder = useCreateFolder();
-  const [renaming, setRenaming] = useState(false);
 
   const handleCreate = (name: string) => {
     setCreating(null);
@@ -72,22 +72,18 @@ export const Tree = ({ level, file }: Props) => {
   }
 
   const folderName = file.name;
-  const folderContent = useGetFolderContents({
-    projectId: file.projectId,
-    parentId: file._id,
-    enabled: isOpenFolder,
-  });
+
   return (
     <>
       {renaming ? (
         <RenameFile
           projectId={file.projectId}
-          parentId={file._id}
+          parentId={file.parentId}
           fileId={file._id}
           projectName={file.name}
           setOpenInput={setRenaming}
           openInput={renaming}
-          level={level} 
+          level={level}
         />
       ) : (
         <TreeItemWrapper
@@ -105,7 +101,7 @@ export const Tree = ({ level, file }: Props) => {
             onClick={() => setIsOpenFolder((value) => !value)}
             onKeyDown={(e: React.KeyboardEvent) => {
               if (e.key === "Delete") setOPenDeleteModal(true);
-              if (e.key === 'F2') setRenaming(true);
+              if (e.key === "F2") setRenaming(true);
             }}
           >
             <ChevronRightIcon
@@ -128,12 +124,15 @@ export const Tree = ({ level, file }: Props) => {
           level={level + 1}
         />
       )}
-      {isOpenFolder && folderContent && (
+      {isOpenFolder && (
         <div className="flex flex-col gap-1">
-          {folderContent === undefined && <LoadingRow level={level + 1} />}
-          {folderContent.map((file) => (
-            <Tree key={file._id} level={level + 1} file={file} />
-          ))}
+          {folderContent === undefined ? (
+            <LoadingRow level={level + 1} />
+          ) : (
+            folderContent.map((file) => (
+              <Tree key={file._id} level={level + 1} file={file} />
+            ))
+          )}
         </div>
       )}
       <DeleteConfirmationModal

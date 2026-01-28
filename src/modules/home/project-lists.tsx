@@ -45,7 +45,7 @@ export const ProjectList = ({
                 className="flex items-center gap-2 text-xs text-muted-foreground  hover:text-foreground transition-colors"
               >
                 <span>view all</span>
-                <Kbd className="border">cltrl+K</Kbd>
+                <Kbd className="border">ctrl+K</Kbd>
               </button>
             </div>
             <ul className="flex flex-col gap-2">

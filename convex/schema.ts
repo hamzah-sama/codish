@@ -21,7 +21,7 @@ export default defineSchema({
     projectId: v.id("projects"),
     parentId: v.optional(v.id("files")),
     name: v.string(),
-    type: v.union(v.literal("folder"), v.literal("file")),
+    type: v.union(v.literal("folder"), v.literal("file"), v.literal("binary")),
     content: v.optional(v.string()), // Only for type "file"
     storageId: v.optional(v.id("_storage")), // Only for type "binary"
     updatedAt: v.number(),
