@@ -3,7 +3,7 @@ import { useGetProjectStatus } from "../utils/useProject";
 import { Spinner } from "@/components/ui/spinner";
 import { CloudCheckIcon } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-import { UseTooltip } from "@/components/use-tooltip";
+import { Hint } from "@/components/hint";
 
 interface Props {
   projectId: Id<"projects">;
@@ -15,18 +15,21 @@ export const ProjectStatus = ({ projectId }: Props) => {
   return (
     <>
       {project?.status === "importing" ? (
-        <UseTooltip trigger={<Spinner />}>Importing...</UseTooltip>
+        <Hint text="Importing..." align="center" side="top">
+          <Spinner />
+        </Hint>
       ) : (
-        <UseTooltip trigger={<CloudCheckIcon />}>
-          <>
-            Saved{" "}
-            {project?.updatedAt ? (
-              formatDistanceToNow(project?.updatedAt, { addSuffix: true })
+        <Hint
+          text={
+            project?.updatedAt ? (
+              `saved ${formatDistanceToNow(project?.updatedAt, { addSuffix: true })}`
             ) : (
               <Spinner />
-            )}
-          </>
-        </UseTooltip>
+            )
+          }
+        >
+          <CloudCheckIcon />
+        </Hint>
       )}
     </>
   );

@@ -42,7 +42,7 @@ export const WorkspaceSection = ({ projectId }: Props) => {
         </div>
       </div>
       {tab === "code" ? (
-        <CodeSection />
+        <CodeSection projectId={projectId} />
       ) : (
         <div className="p-4">Preview Section for project {projectId}</div>
       )}

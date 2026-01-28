@@ -6,18 +6,17 @@ import {
 
 interface Props {
   children: React.ReactNode;
-  text: string;
-  side? : "top" | "right" | "bottom" | "left";
-  align? : "start" | "center" | "end";
-  
+  text: React.ReactNode | string;
+  side?: "top" | "right" | "bottom" | "left";
+  align?: "start" | "center" | "end";
 }
 
 export const Hint = ({ children, text, side, align }: Props) => {
   return (
-    <Tooltip >
+    <Tooltip disableHoverableContent>
       <TooltipTrigger asChild>{children}</TooltipTrigger>
       <TooltipContent side={side} align={align} className="max-w-sm">
-        <p>{text}</p>
+        <p>{typeof text === "string" ? <p>{text}</p> : text}</p>
       </TooltipContent>
     </Tooltip>
   );

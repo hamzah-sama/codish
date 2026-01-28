@@ -6,13 +6,10 @@ interface Props {
 
 const Layout = ({ children }: Props) => {
   return (
-    <div className="w-full">
+    <div className="flex h-screen flex-col">
       <HomeNavbar />
-      <div className="flex h-screen">
-        <main className="flex-1 pt-12 overflow-y-auto bg-sidebar">
-          {children}
-        </main>
-      </div>
+
+      <main className="flex-1 bg-sidebar min-h-0">{children}</main>
     </div>
   );
 };
