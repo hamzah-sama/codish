@@ -29,7 +29,7 @@ export const CodeTabs = forwardRef<HTMLDivElement, Props>(
         onClick={() => setActiveTab(projectId, fileId)}
         className={cn(
           "flex items-center border px-2 py-1 text-sm group cursor-pointer hover:bg-muted",
-          isActiveTab && "bg-muted border-t-2 border-t-blue-500 cursor-default",
+          isActiveTab && "border-t-2 border-t-blue-500 border-b-0",
           isPreviewTab && "italic",
         )}
       >

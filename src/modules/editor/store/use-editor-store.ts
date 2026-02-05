@@ -102,13 +102,13 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
     set({ tabs });
   },
   closeAllTabs: (projectId) => {
-    const tabs = new Map();
+    const tabs = new Map(get().tabs);
     tabs.set(projectId, defaultTabState);
     set({ tabs });
   },
 
   setActiveTab: (projectId, fileId) => {
-    const tabs = new Map();
+    const tabs = new Map(get().tabs);
     const state = get().tabs.get(projectId) ?? defaultTabState;
     tabs.set(projectId, { ...state, activeTabId: fileId });
     set({ tabs });

@@ -50,7 +50,7 @@ export const CodeEditor = ({ projectId }: Props) => {
                 />
               ))}
             </div>
-            <ScrollBar orientation="horizontal" />
+            <ScrollBar orientation="horizontal" className="h-1.25" />
           </ScrollArea>
           {tabs.openTabs.length > 0 && (
             <div className="hover:bg-muted-foreground rounded cursor-pointer mr-2 ml-auto">
