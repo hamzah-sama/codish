@@ -1,4 +1,3 @@
-import { getFileName } from "@/modules/files/utils/useFile";
 import { Id } from "../../../../convex/_generated/dataModel";
 import { XIcon } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
@@ -6,6 +5,7 @@ import { Hint } from "@/components/hint";
 import { cn } from "@/lib/utils";
 import { FileIcon } from "@react-symbols/icons/utils";
 import { forwardRef } from "react";
+import { useGetFileName } from "@/modules/files/utils/useFile";
 
 interface Props {
   fileId: Id<"files">;
@@ -21,7 +21,7 @@ export const CodeTabs = forwardRef<HTMLDivElement, Props>(
     { fileId, projectId, setActiveTab, closeTab, isActiveTab, isPreviewTab },
     ref,
   ) => {
-    const fileName = getFileName({ id: fileId });
+    const fileName = useGetFileName({ id: fileId });
     return (
       <div
         ref={ref}
