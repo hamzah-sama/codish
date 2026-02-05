@@ -30,7 +30,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   tabs: new Map(),
   getTabs: (projectId) => get().tabs.get(projectId) ?? defaultTabState,
   openFile: (projectId, fileId, { pinned }) => {
-    const tabs = new Map();
+    const tabs = new Map(get().tabs);
     const state = get().tabs.get(projectId) ?? defaultTabState;
     const { openTabs, previewTabId } = state;
     const isOpen = openTabs.includes(fileId);
@@ -54,7 +54,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
     if (!isOpen && pinned) {
       tabs.set(projectId, {
         ...state,
-        openFiles: [...openTabs, fileId],
+        openTabs: [...openTabs, fileId],
         activeTabId: fileId,
       });
 
@@ -73,7 +73,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   },
 
   closeTab: (projectId, fileId) => {
-    const tabs = new Map();
+    const tabs = new Map(get().tabs);
     const state = get().tabs.get(projectId) ?? defaultTabState;
     const { openTabs, previewTabId, activeTabId } = state;
     const tabIndex = openTabs.indexOf(fileId);

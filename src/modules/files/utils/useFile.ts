@@ -144,5 +144,5 @@ export const useGetFolderContents = ({
   );
 };
 
-export const getFileName = ({ id: fileId }: { id: Id<"files"> }) =>
+export const useGetFileName = ({ id: fileId }: { id: Id<"files"> }) =>
   useQuery(api.files.getFileName, { id: fileId });
