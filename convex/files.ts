@@ -38,6 +38,16 @@ export const getFolderContents = query({
   },
 });
 
+export const getFileName = query({
+  args: { id: v.id("files") },
+  handler: async (ctx, args) => {
+    const { id } = args;
+    const file = await getFilebyId(ctx, id);
+    await verifyAuthAndOwnership(ctx, file.projectId);
+    return file.name;
+  },
+});
+
 // Mutation section
 export const createFile = mutation({
   args: {
@@ -52,7 +62,7 @@ export const createFile = mutation({
 
     await checkExistingName({ ctx, projectId, name, parentId, type: "file" });
 
-    await ctx.db.insert("files", {
+    const newFile = await ctx.db.insert("files", {
       projectId,
       parentId,
       name,
@@ -61,6 +71,7 @@ export const createFile = mutation({
       updatedAt: Date.now(),
     });
     await updateProjectsTimestamp(ctx, project._id);
+    return newFile
   },
 });
 

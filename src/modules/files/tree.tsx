@@ -15,6 +15,7 @@ import { LoadingRow } from "./loading-row";
 import { DeleteConfirmationModal } from "@/components/confirmation-modal";
 import { RenameFile } from "./rename-file";
 import { FileTree } from "./file-tree";
+import { useEditorStore } from "../editor/store/use-editor-store";
 
 interface Props {
   level: number;
@@ -26,6 +27,7 @@ export const Tree = ({ level, file }: Props) => {
   const [openDeleteModal, setOPenDeleteModal] = useState(false);
   const [creating, setCreating] = useState<"file" | "folder" | null>(null);
   const [renaming, setRenaming] = useState(false);
+  const { openFile } = useEditorStore();
   const deleteFile = useDeleteFile({
     projectId: file.projectId,
     parentId: file._id,
@@ -38,15 +40,16 @@ export const Tree = ({ level, file }: Props) => {
   const createFile = useCreateFile();
   const createFolder = useCreateFolder();
 
-  const handleCreate = (name: string) => {
+  const handleCreate = async (name: string) => {
     setCreating(null);
     if (creating === "file") {
-      createFile({
+      const newFile = await createFile({
         name,
         projectId: file.projectId,
         parentId: file._id,
         content: "",
       });
+      openFile(file.projectId, newFile, { pinned: false});
     } else if (creating === "folder") {
       createFolder({ name, projectId: file.projectId, parentId: file._id });
     }
