@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { FileIcon, FolderIcon } from "@react-symbols/icons/utils";
-import { ChevronRightIcon } from "lucide-react";
 import { setPadding } from "./utils/set-padding";
 
 interface Props {

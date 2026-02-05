@@ -3,6 +3,8 @@ import { Doc, Id } from "../../../convex/_generated/dataModel";
 import { RenameFile } from "./rename-file";
 import { TreeItemWrapper } from "./tree-item-wrapper";
 import { DeleteConfirmationModal } from "@/components/confirmation-modal";
+import { useEditorStore } from "../editor/store/use-editor-store";
+import { cn } from "@/lib/utils";
 
 interface Props {
   renaming: boolean;
@@ -23,6 +25,8 @@ export const FileTree = ({
   openDeleteModal,
   deleteFile,
 }: Props) => {
+  const { openFile, getTabs } = useEditorStore();
+  const activeFile = getTabs(file.projectId).activeTabId === file._id;
   return (
     <>
       {renaming ? (
@@ -44,12 +48,21 @@ export const FileTree = ({
         >
           <div
             tabIndex={0}
-            className="w-full flex items-center gap-1"
+            className={cn(
+              "w-full flex items-center gap-1",
+              activeFile &&  "bg-muted",
+            )}
             role="treeitem"
             onKeyDown={(e: React.KeyboardEvent) => {
               if (e.key === "Delete") setOPenDeleteModal(true);
               if (e.key === "F2") setRenaming(true);
             }}
+            onClick={() =>
+              openFile(file.projectId, file._id, { pinned: false })
+            }
+            onDoubleClick={() =>
+              openFile(file.projectId, file._id, { pinned: true })
+            }
           >
             <FileIcon fileName={file.name} autoAssign className="size-4" />
             <span className="truncate text-sm">{file.name}</span>

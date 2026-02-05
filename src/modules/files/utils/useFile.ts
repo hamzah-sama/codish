@@ -51,6 +51,7 @@ export const useCreateFolder = () => {
         parentId,
         projectId,
       });
+      if (existing === undefined) return;
 
       const files = existing ?? [];
 
@@ -77,7 +78,7 @@ export const useDeleteFile = ({
   parentId,
 }: {
   projectId: Id<"projects">;
-  parentId: Id<"files">;
+  parentId?: Id<"files">;
 }) => {
   return useMutation(api.files.deleteById).withOptimisticUpdate(
     (localStore, args) => {
@@ -142,3 +143,6 @@ export const useGetFolderContents = ({
     enabled ? { parentId, projectId } : "skip",
   );
 };
+
+export const getFileName = ({ id: fileId }: { id: Id<"files"> }) =>
+  useQuery(api.files.getFileName, { id: fileId });

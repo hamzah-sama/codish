@@ -20,6 +20,7 @@ import {
 } from "./utils/useFile";
 import { LoadingRow } from "./loading-row";
 import { Tree } from "./tree";
+import { useEditorStore } from "../editor/store/use-editor-store";
 
 interface Props {
   projectId: Id<"projects">;
@@ -32,15 +33,22 @@ export const FileExplorerView = ({ projectId }: Props) => {
   const createFile = useCreateFile();
   const createFolder = useCreateFolder();
   const [collapseKey, setCollapseKey] = useState(0);
+  const { openFile } = useEditorStore();
 
   const rootFile = useGetFolderContents({
     projectId,
     enabled: true,
   });
-  const handleSubmit = (name: string) => {
+  const handleSubmit = async (name: string) => {
     setCreating(null);
     if (creating === "file") {
-      createFile({ name, projectId, parentId: undefined, content: "" });
+      const newFile = await createFile({
+        name,
+        projectId,
+        parentId: undefined,
+        content: "",
+      });
+      openFile(projectId, newFile, { pinned: false});
     } else if (creating === "folder") {
       createFolder({ name, projectId, parentId: undefined });
     }
