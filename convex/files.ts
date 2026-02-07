@@ -6,7 +6,7 @@ import {
   updateProjectsTimestamp,
   verifyAuthAndOwnership,
 } from "./utils";
-import { Id } from "./_generated/dataModel";
+import { Doc, Id } from "./_generated/dataModel";
 
 // Query section
 
@@ -48,6 +48,59 @@ export const getFileName = query({
   },
 });
 
+export const getFilePath = query({
+  args: { id: v.id("files") },
+  handler: async (ctx, args) => {
+    const { id } = args;
+    const file = await getFilebyId(ctx, id);
+    await verifyAuthAndOwnership(ctx, file.projectId);
+
+    const path: { id: Id<"files">; name: string }[] = [];
+    let currentId: Id<"files"> | undefined = id;
+
+    while (currentId) {
+      const file = (await getFilebyId(ctx, currentId)) as
+        | Doc<"files">
+        | undefined;
+
+      if (!file) break;
+
+      path.unshift({ id: file._id, name: file.name });
+      currentId = file.parentId;
+    }
+
+    return path;
+  },
+});
+
+export const getFileSiblings = query({
+  args: {
+    projectId: v.id("projects"),
+    fileId: v.id("files"),
+  },
+  handler: async (ctx, args) => {
+    const { fileId, projectId } = args;
+    await verifyAuthAndOwnership(ctx, projectId);
+    const parentId = (await getFilebyId(ctx, fileId)).parentId;
+    const files = await ctx.db
+      .query("files")
+      .withIndex("by_project_parent", (q) =>
+        q.eq("projectId", projectId).eq("parentId", parentId),
+      )
+      .collect();
+    return files
+      .map((file) => ({ id: file._id, name: file.name, type: file.type }))
+      .filter(
+        (f): f is typeof f & { type: "file" | "folder" } =>
+          f.type === "file" || f.type === "folder",
+      )
+      .sort((a, b) => {
+        if (a.type !== b.type) return a.type == "folder" ? -1 : 1;
+        return a.name.localeCompare(b.name);
+      });
+  },
+});
+
 // Mutation section
 export const createFile = mutation({
   args: {
@@ -71,7 +124,7 @@ export const createFile = mutation({
       updatedAt: Date.now(),
     });
     await updateProjectsTimestamp(ctx, project._id);
-    return newFile
+    return newFile;
   },
 });
 

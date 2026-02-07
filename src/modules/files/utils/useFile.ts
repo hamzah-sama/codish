@@ -1,6 +1,7 @@
 import { api } from "../../../../convex/_generated/api";
 import { useMutation, useQuery } from "convex/react";
 import { Id } from "../../../../convex/_generated/dataModel";
+import { getFilebyId } from "../../../../convex/utils";
 
 const sortFiles = <T extends { type: "file" | "folder"; name: string }>(
   files: T[],
@@ -146,3 +147,16 @@ export const useGetFolderContents = ({
 
 export const useGetFileName = ({ id: fileId }: { id: Id<"files"> }) =>
   useQuery(api.files.getFileName, { id: fileId });
+
+export const useGetFilePath = ({ id }: { id: Id<"files"> | null }) =>
+  useQuery(api.files.getFilePath, id ? { id } : "skip");
+
+export const useGetFileSiblings = ({
+  projectId,
+  fileId,
+}: {
+  projectId: Id<"projects">;
+  fileId: Id<"files">;
+}) => {
+  return useQuery(api.files.getFileSiblings, { fileId, projectId });
+};

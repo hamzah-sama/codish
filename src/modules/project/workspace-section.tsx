@@ -3,7 +3,7 @@ import { Id } from "../../../convex/_generated/dataModel";
 import { FaGithub } from "react-icons/fa";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { CodeEditor } from "../editor/code-editor";
+import { CodeEditorView } from "../editor/code-editor";
 
 interface Props {
   projectId: Id<"projects">;
@@ -42,7 +42,7 @@ export const WorkspaceSection = ({ projectId }: Props) => {
         </div>
       </div>
       {tab === "code" ? (
-        <CodeEditor projectId={projectId} />
+        <CodeEditorView projectId={projectId} />
       ) : (
         <div className="p-4">Preview Section for project {projectId}</div>
       )}

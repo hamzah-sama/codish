@@ -1,4 +1,4 @@
-import { Id } from "../../../../convex/_generated/dataModel";
+import { Id } from "../../../../../convex/_generated/dataModel";
 import { XIcon } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { Hint } from "@/components/hint";
@@ -16,7 +16,7 @@ interface Props {
   isPreviewTab: boolean;
 }
 
-export const CodeTabs = forwardRef<HTMLDivElement, Props>(
+export const TabsItem = forwardRef<HTMLDivElement, Props>(
   (
     { fileId, projectId, setActiveTab, closeTab, isActiveTab, isPreviewTab },
     ref,
