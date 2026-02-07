@@ -7,7 +7,11 @@ interface Props {
 
 const Page = async ({ params }: Props) => {
   const { projectId } = await params;
-  return <ProjectView projectId={projectId} />;
+  return (
+    <div className="flex flex-col h-full w-full">
+      <ProjectView projectId={projectId} />
+    </div>
+  );
 };
 
 export default Page;

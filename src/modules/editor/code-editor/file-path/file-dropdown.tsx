@@ -3,13 +3,10 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import { FileIcon } from "@react-symbols/icons/utils";
 import { Id } from "../../../../../convex/_generated/dataModel";
 import { useGetFileSiblings } from "@/modules/files/utils/useFile";
-import { ChevronRightIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { useEditorStore } from "../../store/use-editor-store";
-import { FileDropDownItem } from "./file-dropdwon-item";
+import { FileDropDownItem } from "./file-dropdown-item";
 
 interface Props {
   fileId: Id<"files">;

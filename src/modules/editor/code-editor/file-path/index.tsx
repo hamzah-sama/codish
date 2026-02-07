@@ -12,7 +12,10 @@ import {
 } from "@/components/ui/breadcrumb";
 
 import { FileIcon } from "@react-symbols/icons/utils";
-import { DropdownMenu, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { FileDropdown } from "./file-dropdown";
 
 interface Props {
@@ -22,9 +25,6 @@ interface Props {
 export const FilePath = ({ projectId }: Props) => {
   const { getTabs } = useEditorStore();
   const { activeTabId } = getTabs(projectId);
-  const fileSibling = (projectId: Id<"projects">, fileId: Id<"files">) =>
-    useGetFileSiblings({ projectId, fileId });
-
   const path = useGetFilePath({ id: activeTabId });
 
   return (
@@ -55,7 +55,6 @@ export const FilePath = ({ projectId }: Props) => {
           ))}
         </BreadcrumbList>
       </Breadcrumb>
-      {JSON.stringify(fileSibling, null, 2)}
     </>
   );
 };

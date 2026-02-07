@@ -30,7 +30,7 @@ export const FileDropDownItem = ({
   const getFolderContents = useGetFolderContents({
     projectId,
     parentId: fileId,
-    enabled: true,
+    enabled: fileType === "folder",
   });
 
   if (fileType === "file") {

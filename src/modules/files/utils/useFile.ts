@@ -1,7 +1,6 @@
 import { api } from "../../../../convex/_generated/api";
 import { useMutation, useQuery } from "convex/react";
 import { Id } from "../../../../convex/_generated/dataModel";
-import { getFilebyId } from "../../../../convex/utils";
 
 const sortFiles = <T extends { type: "file" | "folder"; name: string }>(
   files: T[],

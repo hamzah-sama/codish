@@ -59,9 +59,7 @@ export const getFilePath = query({
     let currentId: Id<"files"> | undefined = id;
 
     while (currentId) {
-      const file = (await getFilebyId(ctx, currentId)) as
-        | Doc<"files">
-        | undefined;
+      const file = await getFilebyId(ctx, currentId);
 
       if (!file) break;
 
