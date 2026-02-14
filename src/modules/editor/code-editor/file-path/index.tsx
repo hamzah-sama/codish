@@ -17,7 +17,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { FileDropdown } from "./file-dropdown";
-import React from "react";
 
 interface Props {
   projectId: Id<"projects">;
@@ -33,8 +32,8 @@ export const FilePath = ({ projectId }: Props) => {
       <Breadcrumb className="px-3 pt-1 ">
         <BreadcrumbList>
           {path?.map((p, i) => (
-            <React.Fragment key={p.id}>
-              <BreadcrumbItem>
+            <div key={p.id} className="flex items-center gap-2">
+              <BreadcrumbItem key={p.id}>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <div className="cursor-pointer flex items-center gap-1">
@@ -52,7 +51,7 @@ export const FilePath = ({ projectId }: Props) => {
                 </DropdownMenu>
               </BreadcrumbItem>
               {i < path.length - 1 && <BreadcrumbSeparator />}
-            </React.Fragment>
+            </div>
           ))}
         </BreadcrumbList>
       </Breadcrumb>
