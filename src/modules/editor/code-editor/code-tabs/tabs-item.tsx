@@ -28,8 +28,8 @@ export const TabsItem = forwardRef<HTMLDivElement, Props>(
         role="tab"
         onClick={() => setActiveTab(projectId, fileId)}
         className={cn(
-          "flex items-center border-r px-2 py-1 text-sm group cursor-pointer hover:bg-muted",
-          isActiveTab && "bg-sidebar border-t-2 border-t-blue-500 cursor-default",
+          "flex items-center border px-2 py-1 text-sm group cursor-pointer hover:bg-muted",
+          isActiveTab && "bg-muted border-t-2 border-t-blue-500 cursor-default",
           isPreviewTab && "italic",
         )}
       >
