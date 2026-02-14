@@ -51,30 +51,28 @@ export const FileDropDownItem = ({
     );
   }
   return (
-    <div>
-      <DropdownMenuSub>
-        <DropdownMenuSubTrigger
-          className={cn(
-            "flex items-center gap-2 cursor-pointer hover:bg-muted! rounded-none w-full",
-            fileId === activeFileId &&
-              "outline-none ring-blue-500 ring-1 hover:bg-transparent!",
-          )}
-        >
-          <span>{fileName}</span>
-        </DropdownMenuSubTrigger>
-        <DropdownMenuSubContent className="rounded-none">
-          {getFolderContents?.map((file) => (
-            <FileDropDownItem
-              key={file._id}
-              projectId={projectId}
-              activeFileId={activeFileId}
-              fileId={file._id}
-              fileType={file.type}
-              fileName={file.name}
-            />
-          ))}
-        </DropdownMenuSubContent>
-      </DropdownMenuSub>
-    </div>
+    <DropdownMenuSub>
+      <DropdownMenuSubTrigger
+        className={cn(
+          "flex items-center gap-2 cursor-pointer hover:bg-muted! rounded-none w-full",
+          fileId === activeFileId &&
+            "outline-none ring-blue-500 ring-1 hover:bg-transparent!",
+        )}
+      >
+        <span>{fileName}</span>
+      </DropdownMenuSubTrigger>
+      <DropdownMenuSubContent className="rounded-none">
+        {getFolderContents?.map((file) => (
+          <FileDropDownItem
+            key={file._id}
+            projectId={projectId}
+            activeFileId={activeFileId}
+            fileId={file._id}
+            fileType={file.type}
+            fileName={file.name}
+          />
+        ))}
+      </DropdownMenuSubContent>
+    </DropdownMenuSub>
   );
 };
