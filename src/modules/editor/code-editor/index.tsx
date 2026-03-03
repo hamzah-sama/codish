@@ -6,7 +6,11 @@ import { FilePath } from "./file-path";
 import { useEditorStore } from "../store/use-editor-store";
 import { BackgroundLogo } from "@/components/backgroundLogo";
 import { CodeContent } from "./code-content";
-import { useGetFileName } from "@/modules/files/utils/useFile";
+import {
+  useGetActiveFile,
+  useUpdateFileContent,
+} from "@/modules/files/utils/useFile";
+import { useRef } from "react";
 
 interface Props {
   projectId: Id<"projects">;
@@ -15,7 +19,10 @@ interface Props {
 export const CodeEditorView = ({ projectId }: Props) => {
   const { getTabs } = useEditorStore();
   const isActiveTab = getTabs(projectId).activeTabId !== null;
-  const fileName = useGetFileName({ id: getTabs(projectId).activeTabId });
+  const { activeTabId } = getTabs(projectId);
+  const activeFile = useGetActiveFile({ id: activeTabId }) ?? null;
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const updateFileContent = useUpdateFileContent();
   return (
     <Allotment defaultSizes={[400, 1000]}>
       <Allotment.Pane snap minSize={200} maxSize={800} preferredSize={400}>
@@ -36,7 +43,22 @@ export const CodeEditorView = ({ projectId }: Props) => {
           )}
           {isActiveTab && (
             <div className="flex-1 min-h-0 overflow-hidden">
-              <CodeContent />
+              <CodeContent
+                fileName={activeFile?.name}
+                initialState={activeFile?.content}
+                onChange={(content: string) => {
+                  if (timeoutRef.current) {
+                    clearTimeout(timeoutRef.current);
+                  }
+
+                  timeoutRef.current = setTimeout(() => {
+                    updateFileContent({
+                      fileId: activeTabId ?? undefined,
+                      content,
+                    });
+                  }, 1500);
+                }}
+              />
             </div>
           )}
         </div>

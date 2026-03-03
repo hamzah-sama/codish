@@ -38,6 +38,16 @@ export const getFolderContents = query({
   },
 });
 
+export const getActiveFile = query({
+  args: { id: v.id("files") },
+  handler: async (ctx, args) => {
+    const { id } = args;
+    const file = await getFilebyId(ctx, id);
+    await verifyAuthAndOwnership(ctx, file.projectId);
+    return file;
+  },
+});
+
 export const getFileName = query({
   args: { id: v.id("files") },
   handler: async (ctx, args) => {
@@ -219,5 +229,23 @@ export const deleteById = mutation({
     await recursivelyDelete(file._id);
 
     await updateProjectsTimestamp(ctx, file.projectId);
+  },
+});
+
+export const updateContent = mutation({
+  args: {
+    fileId: v.optional(v.id("files")),
+    content: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const { fileId, content } = args;
+    if (!fileId) return;
+    const file = await getFilebyId(ctx, fileId);
+    if(file.type !== "file") {
+      throw new ConvexError("Only files can be updated");
+    }
+    await verifyAuthAndOwnership(ctx, file.projectId);
+    await ctx.db.patch("files", file._id, { content, updatedAt: Date.now() });
+    await ctx.db.patch("projects", file.projectId, { updatedAt: Date.now() });
   },
 });
