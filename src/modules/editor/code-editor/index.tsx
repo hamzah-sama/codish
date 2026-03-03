@@ -6,7 +6,10 @@ import { FilePath } from "./file-path";
 import { useEditorStore } from "../store/use-editor-store";
 import { BackgroundLogo } from "@/components/backgroundLogo";
 import { CodeContent } from "./code-content";
-import { useGetActiveFile, useUpdateFileContent } from "@/modules/files/utils/useFile";
+import {
+  useGetActiveFile,
+  useUpdateFileContent,
+} from "@/modules/files/utils/useFile";
 import { useRef } from "react";
 
 interface Props {
@@ -47,11 +50,13 @@ export const CodeEditorView = ({ projectId }: Props) => {
                   if (timeoutRef.current) {
                     clearTimeout(timeoutRef.current);
                   }
-                 
 
-                  timeoutRef.current = setTimeout(()=>{
-                    updateFileContent({fileId: activeTabId ?? undefined, content});
-                  })
+                  timeoutRef.current = setTimeout(() => {
+                    updateFileContent({
+                      fileId: activeTabId ?? undefined,
+                      content,
+                    });
+                  }, 1500);
                 }}
               />
             </div>

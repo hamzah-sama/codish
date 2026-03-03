@@ -241,6 +241,9 @@ export const updateContent = mutation({
     const { fileId, content } = args;
     if (!fileId) return;
     const file = await getFilebyId(ctx, fileId);
+    if(file.type !== "file") {
+      throw new ConvexError("Only files can be updated");
+    }
     await verifyAuthAndOwnership(ctx, file.projectId);
     await ctx.db.patch("files", file._id, { content, updatedAt: Date.now() });
     await ctx.db.patch("projects", file.projectId, { updatedAt: Date.now() });
