@@ -129,6 +129,10 @@ export const useRenameFile = ({
   );
 };
 
+export const useUpdateFileContent = () => {
+  return useMutation(api.files.updateContent);
+};
+
 export const useGetFolderContents = ({
   projectId,
   parentId,
@@ -144,8 +148,9 @@ export const useGetFolderContents = ({
   );
 };
 
-export const useGetFileName = ({ id: fileId }: { id: Id<"files"> }) =>
-  useQuery(api.files.getFileName, { id: fileId });
+
+export const useGetActiveFile = ({ id }: { id: Id<"files"> | null }) =>
+  useQuery(api.files.getActiveFile, id ? { id } : "skip");
 
 export const useGetFilePath = ({ id }: { id: Id<"files"> | null }) =>
   useQuery(api.files.getFilePath, id ? { id } : "skip");

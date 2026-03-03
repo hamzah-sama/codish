@@ -14,7 +14,10 @@ import { sql } from "@codemirror/lang-sql";
 import { xml } from "@codemirror/lang-xml";
 import { yaml } from "@codemirror/lang-yaml";
 
-export const languageExtension = (fileName: string): Extension => {
+export const getLanguageExtension = (
+  fileName: string | undefined,
+): Extension => {
+  if (!fileName) return [];
   const ext = fileName.split(".").pop()?.toLowerCase();
 
   switch (ext) {
