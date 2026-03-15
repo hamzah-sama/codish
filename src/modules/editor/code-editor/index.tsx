@@ -10,7 +10,7 @@ import {
   useGetActiveFile,
   useUpdateFileContent,
 } from "@/modules/files/utils/useFile";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 
 interface Props {
   projectId: Id<"projects">;
@@ -23,6 +23,13 @@ export const CodeEditorView = ({ projectId }: Props) => {
   const activeFile = useGetActiveFile({ id: activeTabId }) ?? null;
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const updateFileContent = useUpdateFileContent();
+
+  // Clear the timeout when activeTabId changes to prevent updating content of a file that is no longer active
+  useEffect(() => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+  }, [activeTabId]);
   return (
     <Allotment defaultSizes={[400, 1000]}>
       <Allotment.Pane snap minSize={200} maxSize={800} preferredSize={400}>
