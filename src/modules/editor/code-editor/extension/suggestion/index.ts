@@ -3,6 +3,7 @@ import {
   Decoration,
   DecorationSet,
   EditorView,
+  keymap,
   ViewPlugin,
   ViewUpdate,
   WidgetType,
@@ -89,7 +90,25 @@ const renderPlugin = ViewPlugin.fromClass(
   { decorations: (plugin) => plugin.decorations }, // tell code mirror to use our decoration
 );
 
+const acceptSuggestion = keymap.of([
+  {
+    key: "Tab",
+    run: (view) => {
+      const suggestion = view.state.field(suggestionState);
+      if (!suggestion) return false; // let tab do its normal behavior if there is no suggestion
+      const cursor = view.state.selection.main.head;
+      view.dispatch({
+        changes: { from: cursor, insert: suggestion }, // insert the suggestion at the cursor position
+        selection: { anchor: cursor + suggestion.length }, // move the cursor to the end of the inserted suggestion
+        effects: setSuggestionEffect.of(null), // clear the suggestion after accepting it
+      });
+      return true; // prevent default tab behavior
+    },
+  },
+]);
+
 export const suggestionExtension = (fileName: string | undefined) => [
   suggestionState,
   renderPlugin,
+  acceptSuggestion,
 ];

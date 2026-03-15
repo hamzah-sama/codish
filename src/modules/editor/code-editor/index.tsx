@@ -26,9 +26,11 @@ export const CodeEditorView = ({ projectId }: Props) => {
 
   // Clear the timeout when activeTabId changes to prevent updating content of a file that is no longer active
   useEffect(() => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
   }, [activeTabId]);
   return (
     <Allotment defaultSizes={[400, 1000]}>
