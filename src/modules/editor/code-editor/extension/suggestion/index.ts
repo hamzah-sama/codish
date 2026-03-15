@@ -8,6 +8,7 @@ import {
   ViewUpdate,
   WidgetType,
 } from "@codemirror/view";
+import { debugPort } from "process";
 
 // stateEffect : a way to send 'messages' to update the state of the editor. In this case, we define a state effect that can carry a string (the suggestion) or null (to clear the suggestion).
 
@@ -18,7 +19,7 @@ const setSuggestionEffect = StateEffect.define<string | null>();
 // update : listens for transactions that contain the setSuggestionEffect and updates the state accordingly. If the effect is present, it updates the state with the new suggestion; otherwise, it retains the existing value.
 const suggestionState = StateField.define<string | null>({
   create() {
-    return "//dummy suggestion";
+    return null; // no suggestion at initially
   },
   update(value, tr) {
     // check if the transaction contains the setSuggestionEffect and update the value accordingly
@@ -49,6 +50,68 @@ class suggestionWidget extends WidgetType {
   }
 }
 
+let debounceTimer: number | null = null;
+let isWaitingForSuggestion = false;
+let DEBOUNCE_DELAY = 300; // delay in ms before sending the request for a suggestion
+
+const hardCodeSuggestion = (textBeforeCursor: string): string | null => {
+  const trimmedText = textBeforeCursor.trim();
+  if (trimmedText.endsWith("console.")) {
+    return "log()";
+  }
+  if (trimmedText.endsWith("function")) {
+    return " myFunction() {\n\n}";
+  }
+  if (trimmedText.endsWith("for")) {
+    return " (let i = 0; i < length; i++) {\n\n}";
+  }
+  if (trimmedText.endsWith("if")) {
+    return " (condition) {\n\n}";
+  }
+  return null;
+};
+
+const createDebouncePluggin = (fileName: string | undefined) => {
+  return ViewPlugin.fromClass(
+    class {
+      constructor(view: EditorView) {
+        this.triggerSuggestion(view);
+      }
+
+      update(update: ViewUpdate) {
+        if (update.selectionSet || update.docChanged) {
+          this.triggerSuggestion(update.view);
+        }
+      }
+
+      triggerSuggestion(view: EditorView) {
+        if (debounceTimer) {
+          clearTimeout(debounceTimer);
+        }
+        isWaitingForSuggestion = true;
+        debounceTimer = window.setTimeout(async () => {
+          // hardcode suggestion for demo purposes
+          const cursor = view.state.selection.main.head;
+          const line = view.state.doc.lineAt(cursor);
+          const textBeforeCursor = line.text.slice(0, cursor - line.from);
+          const suggestion = hardCodeSuggestion(textBeforeCursor);
+
+          isWaitingForSuggestion = false;
+          view.dispatch({
+            effects: setSuggestionEffect.of(suggestion), // update the suggestion state with the new suggestion
+          });
+        }, DEBOUNCE_DELAY);
+      }
+
+      destroy() {
+        if (debounceTimer !== null) {
+          clearTimeout(debounceTimer);
+        }
+      }
+    },
+  );
+};
+
 const renderPlugin = ViewPlugin.fromClass(
   class {
     decorations: DecorationSet;
@@ -70,6 +133,9 @@ const renderPlugin = ViewPlugin.fromClass(
       }
     }
     build(view: EditorView) {
+      if (isWaitingForSuggestion) {
+        return Decoration.none; // don't show old suggestion while waiting for new one
+      }
       //  get the current suggestion from the editor's state if there is no suggestion, return an empty decoration set
       const suggestion = view.state.field(suggestionState);
       if (!suggestion) {
@@ -108,7 +174,8 @@ const acceptSuggestion = keymap.of([
 ]);
 
 export const suggestionExtension = (fileName: string | undefined) => [
-  suggestionState,
-  renderPlugin,
-  acceptSuggestion,
+  suggestionState, //state storage
+  renderPlugin, // render ghost text or suggestion
+  createDebouncePluggin(fileName), // trigger suggestion while typing
+  acceptSuggestion, // tab to accept or execute suggestion
 ];
