@@ -8,6 +8,7 @@ import {
   ViewUpdate,
   WidgetType,
 } from "@codemirror/view";
+import { fetcher } from "./fetcher";
 
 // stateEffect : a way to send 'messages' to update the state of the editor. In this case, we define a state effect that can carry a string (the suggestion) or null (to clear the suggestion).
 
@@ -53,21 +54,38 @@ let debounceTimer: number | null = null;
 let isWaitingForSuggestion = false;
 const DEBOUNCE_DELAY = 300; // delay in ms before sending the request for a suggestion
 
-const hardCodeSuggestion = (textBeforeCursor: string): string | null => {
-  const trimmedText = textBeforeCursor.trim();
-  if (trimmedText.endsWith("console.")) {
-    return "log()";
+let currentAbortController: AbortController | null = null;
+
+const generatePayload = (view: EditorView, fileName: string) => {
+  const code = view.state.doc.toString();
+  if (!code || code.trim().length === 0) return null;
+  const cursorPosition = view.state.selection.main.head;
+  const currentLine = view.state.doc.lineAt(cursorPosition);
+  const cursorInline = cursorPosition - currentLine.from;
+
+  const previousLine: string[] = [];
+  const previousLineToFetch = Math.min(5, currentLine.number - 1);
+  for (let i = previousLineToFetch; i >= 1; i--) {
+    previousLine.push(view.state.doc.line(currentLine.number - i).text);
   }
-  if (trimmedText.endsWith("function")) {
-    return " myFunction() {\n\n}";
+
+  const nextLine: string[] = [];
+  const totalLines = view.state.doc.lines;
+  const lineTOFetch = Math.min(5, totalLines - currentLine.number);
+  for (let i = 1; i <= lineTOFetch; i++) {
+    nextLine.push(view.state.doc.line(currentLine.number + i).text);
   }
-  if (trimmedText.endsWith("for")) {
-    return " (let i = 0; i < length; i++) {\n\n}";
-  }
-  if (trimmedText.endsWith("if")) {
-    return " (condition) {\n\n}";
-  }
-  return null;
+
+  return {
+    fileName,
+    code,
+    currentLine: currentLine.text,
+    textBeforeCursor: currentLine.text.slice(0, cursorInline),
+    textAfterCursor: currentLine.text.slice(cursorInline),
+    previousLines: previousLine.join("\n"),
+    nextLines: nextLine.join("\n"),
+    lineNumber: currentLine.number,
+  };
 };
 
 const createDebouncePluggin = (fileName: string | undefined) => {
@@ -87,13 +105,28 @@ const createDebouncePluggin = (fileName: string | undefined) => {
         if (debounceTimer) {
           clearTimeout(debounceTimer);
         }
+
+        if (currentAbortController) {
+          currentAbortController.abort(); // cancel the previous request if it's still pending
+        }
+
         isWaitingForSuggestion = true;
         debounceTimer = window.setTimeout(async () => {
-          // hardcode suggestion for demo purposes
-          const cursor = view.state.selection.main.head;
-          const line = view.state.doc.lineAt(cursor);
-          const textBeforeCursor = line.text.slice(0, cursor - line.from);
-          const suggestion = hardCodeSuggestion(textBeforeCursor);
+          const payload = generatePayload(view, fileName || "");
+          if (!payload) {
+            isWaitingForSuggestion = false;
+            view.dispatch({
+              effects: setSuggestionEffect.of(null), // clear suggestion if payload is invalid
+            });
+            return;
+          }
+
+          currentAbortController = new AbortController();
+
+          const suggestion = await fetcher(
+            payload,
+            currentAbortController.signal,
+          );
 
           isWaitingForSuggestion = false;
           view.dispatch({
@@ -105,6 +138,10 @@ const createDebouncePluggin = (fileName: string | undefined) => {
       destroy() {
         if (debounceTimer !== null) {
           clearTimeout(debounceTimer);
+        }
+
+        if (currentAbortController) {
+          currentAbortController.abort(); // cancel any pending request when the plugin is destroyed
         }
       }
     },
