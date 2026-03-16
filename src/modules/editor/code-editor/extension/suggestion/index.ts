@@ -8,7 +8,6 @@ import {
   ViewUpdate,
   WidgetType,
 } from "@codemirror/view";
-import { debugPort } from "process";
 
 // stateEffect : a way to send 'messages' to update the state of the editor. In this case, we define a state effect that can carry a string (the suggestion) or null (to clear the suggestion).
 
@@ -52,7 +51,7 @@ class suggestionWidget extends WidgetType {
 
 let debounceTimer: number | null = null;
 let isWaitingForSuggestion = false;
-let DEBOUNCE_DELAY = 300; // delay in ms before sending the request for a suggestion
+const DEBOUNCE_DELAY = 300; // delay in ms before sending the request for a suggestion
 
 const hardCodeSuggestion = (textBeforeCursor: string): string | null => {
   const trimmedText = textBeforeCursor.trim();
