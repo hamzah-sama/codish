@@ -9,6 +9,7 @@ import { customSetup } from "../extension/custom-setup";
 import { miniMap } from "../extension/minimap";
 import { keymap } from "@codemirror/view";
 import { indentWithTab } from "@codemirror/commands";
+import { suggestionExtension } from "../extension/suggestion";
 
 interface Props {
   fileName?: string;
@@ -35,6 +36,7 @@ export const CodeContent = ({ fileName, initialState, onChange }: Props) => {
           customSetup,
           syntaxHighlighting(oneDarkHighlightStyle),
           languageExtensions,
+          suggestionExtension(fileName),
           oneDark,
           miniMap(),
           keymap.of([indentWithTab]),
