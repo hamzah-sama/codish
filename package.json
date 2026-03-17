@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.43",
+    "@ai-sdk/openai": "^3.0.41",
     "@clerk/nextjs": "^6.36.7",
     "@clerk/themes": "^2.4.47",
     "@codemirror/basic-setup": "^0.20.0",
