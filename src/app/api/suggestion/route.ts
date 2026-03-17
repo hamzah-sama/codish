@@ -46,7 +46,6 @@ export async function POST(request: Request) {
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
     const {
       fileName,
       previousLines,
@@ -79,12 +78,14 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ suggestion: output.suggestion });
   } catch (error) {
-    console.error("Error parsing request body:", error);
-    return new Response(
-      JSON.stringify({
-        error: "Invalid request body. Please provide all required fields.",
-      }),
-      { status: 400, headers: { "Content-Type": "application/json" } },
+    if (error instanceof SyntaxError) {
+      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    }
+
+    console.error("Failed generating suggestion:", error);
+    return NextResponse.json(
+      { error: "Failed to generate suggestion" },
+      { status: 500 },
     );
   }
 }
