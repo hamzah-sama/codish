@@ -7,7 +7,7 @@ export const showQuickEditEffect = StateEffect.define<boolean>();
 let editorView: EditorView | null = null;
 let currentAbortController: AbortController | null = null;
 
-const quickEditState = StateField.define<boolean>({
+export const quickEditState = StateField.define<boolean>({
   create() {
     return false;
   },
