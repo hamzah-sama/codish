@@ -1,0 +1,72 @@
+import { v } from "convex/values";
+import { mutation, query } from "./_generated/server";
+import { verifyAuth, verifyAuthAndOwnership } from "./utils";
+
+export const create = mutation({
+  args: {
+    projectId: v.id("projects"),
+    title: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const project = await verifyAuthAndOwnership(ctx, args.projectId);
+
+    const conversationId = await ctx.db.insert("conversation", {
+      title: args.title,
+      projectId: project._id,
+      updateAt: Date.now(),
+    });
+
+    return conversationId;
+  },
+});
+
+export const getById = query({
+  args: {
+    id: v.id("conversation"),
+  },
+  handler: async (ctx, args) => {
+    await verifyAuth(ctx);
+    const conversation = await ctx.db.get("conversation", args.id);
+    if (!conversation) {
+      throw new Error("conversation not found");
+    }
+    await verifyAuthAndOwnership(ctx, conversation.projectId);
+
+    return conversation;
+  },
+});
+
+export const getByProject = query({
+  args: v.id("projects"),
+  handler: async (ctx, args) => {
+    const project = await verifyAuthAndOwnership(ctx, args);
+
+    return await ctx.db
+      .query("conversation")
+      .withIndex("by_project", (q) => q.eq("projectId", project._id))
+      .order("desc")
+      .collect();
+  },
+});
+
+export const getMessages = query({
+  args: {
+    conversationId: v.id("conversation"),
+  },
+  handler: async (ctx, args) => {
+    await verifyAuth(ctx);
+    const conversation = await ctx.db.get("conversation", args.conversationId);
+    if (!conversation) {
+      throw new Error("conversation not found");
+    }
+    await verifyAuthAndOwnership(ctx, conversation.projectId);
+
+    return await ctx.db
+      .query("message")
+      .withIndex("by_conversation", (q) =>
+        q.eq("conversationId", args.conversationId),
+      )
+      .order("asc")
+      .collect();
+  },
+});
