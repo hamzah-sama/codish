@@ -10,6 +10,8 @@ import { miniMap } from "../extension/minimap";
 import { keymap } from "@codemirror/view";
 import { indentWithTab } from "@codemirror/commands";
 import { suggestionExtension } from "../extension/suggestion";
+import { quickEditExtension } from "../extension/quick-edit";
+import { selectionTooltip } from "../extension/selection-tooltip";
 
 interface Props {
   fileName?: string;
@@ -37,6 +39,8 @@ export const CodeContent = ({ fileName, initialState, onChange }: Props) => {
           syntaxHighlighting(oneDarkHighlightStyle),
           languageExtensions,
           suggestionExtension(fileName),
+          quickEditExtension(),
+          selectionTooltip(),
           oneDark,
           miniMap(),
           keymap.of([indentWithTab]),
