@@ -10,7 +10,7 @@ export const create = mutation({
   handler: async (ctx, args) => {
     const project = await verifyAuthAndOwnership(ctx, args.projectId);
 
-    const conversationId = await ctx.db.insert("conversation", {
+    const conversationId = await ctx.db.insert("conversations", {
       title: args.title,
       projectId: project._id,
       updateAt: Date.now(),
@@ -22,11 +22,11 @@ export const create = mutation({
 
 export const getById = query({
   args: {
-    id: v.id("conversation"),
+    id: v.id("conversations"),
   },
   handler: async (ctx, args) => {
     await verifyAuth(ctx);
-    const conversation = await ctx.db.get("conversation", args.id);
+    const conversation = await ctx.db.get(args.id);
     if (!conversation) {
       throw new Error("conversation not found");
     }
@@ -37,12 +37,14 @@ export const getById = query({
 });
 
 export const getByProject = query({
-  args: v.id("projects"),
+  args: {
+    projectId: v.id("projects"),
+  },
   handler: async (ctx, args) => {
-    const project = await verifyAuthAndOwnership(ctx, args);
+    const project = await verifyAuthAndOwnership(ctx, args.projectId);
 
     return await ctx.db
-      .query("conversation")
+      .query("conversations")
       .withIndex("by_project", (q) => q.eq("projectId", project._id))
       .order("desc")
       .collect();
@@ -51,11 +53,11 @@ export const getByProject = query({
 
 export const getMessages = query({
   args: {
-    conversationId: v.id("conversation"),
+    conversationId: v.id("conversations"),
   },
   handler: async (ctx, args) => {
     await verifyAuth(ctx);
-    const conversation = await ctx.db.get("conversation", args.conversationId);
+    const conversation = await ctx.db.get(args.conversationId);
     if (!conversation) {
       throw new Error("conversation not found");
     }
@@ -64,7 +66,7 @@ export const getMessages = query({
     return await ctx.db
       .query("message")
       .withIndex("by_conversation", (q) =>
-        q.eq("conversationId", args.conversationId),
+        q.eq("conversationId", conversation._id),
       )
       .order("asc")
       .collect();

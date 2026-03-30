@@ -30,22 +30,22 @@ export default defineSchema({
     .index("by_parent", ["parentId"])
     .index("by_project_parent", ["projectId", "parentId"]),
 
-  conversation: defineTable({
+  conversations: defineTable({
     projectId: v.id("projects"),
     title: v.string(),
     updateAt: v.number(),
   }).index("by_project", ["projectId"]),
 
   message: defineTable({
-    conversationId: v.id("conversation"),
+    conversationId: v.id("conversations"),
     projectId: v.id("projects"),
     content: v.string(),
     role: v.union(v.literal("user"), v.literal("assistant")),
-    status: v.union(
+    status: v.optional(v.union(
       v.literal("processing"),
       v.literal("completed"),
       v.literal("cancelled"),
-    ),
+    )),
   })
     .index("by_conversation", ["conversationId"])
     .index("by_project_status", ["projectId", "status"]),
