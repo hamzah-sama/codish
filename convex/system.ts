@@ -108,3 +108,18 @@ export const updateMessageStatus = mutation({
     });
   },
 });
+
+export const updateConversationTitle = mutation({
+  args: {
+    conversationId: v.id("conversations"),
+    internalKey: v.string(),
+    title: v.string(),
+  },
+  handler: async (ctx, args) => {
+    validateInternalKey(args.internalKey);
+    await ctx.db.patch("conversations", args.conversationId, {
+      title: args.title,
+      updatedAt: Date.now(),
+    });
+  },
+});

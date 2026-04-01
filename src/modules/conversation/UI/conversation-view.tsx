@@ -87,7 +87,7 @@ export const ConversationView = ({ projectId }: Props) => {
   const handleCreateConversation = async () => {
     try {
       const newConversationId = await createConversation({
-        title: "untitled",
+        title: DEFAULT_CONVERSATION_TITLE,
         projectId,
       });
       setselectedConversationId(newConversationId);
