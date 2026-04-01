@@ -12,6 +12,12 @@ interface MessageEvent {
 export const processMessage = inngest.createFunction(
   {
     id: "process-message",
+    cancelOn: [
+      {
+        event: "message/cancel",
+        if: "event.data.messageId == async.data.messageId",
+      },
+    ],
 
     // onFailure handler to update message content to "Failed to process message" when processing fails
     onFailure: async ({ event, step }) => {
@@ -42,7 +48,7 @@ export const processMessage = inngest.createFunction(
       throw new NonRetriableError("Internal key not found");
     }
 
-    await step.sleep("waiting for db-sync", "1s");
+    await step.sleep("waiting for db-sync", "10s");
 
     await step.run("update-message-content", async () => {
       await convex.mutation(api.system.updateMessageContent, {

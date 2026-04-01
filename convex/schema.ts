@@ -33,7 +33,7 @@ export default defineSchema({
   conversations: defineTable({
     projectId: v.id("projects"),
     title: v.string(),
-    updateAt: v.number(),
+    updatedAt: v.number(),
   }).index("by_project", ["projectId"]),
 
   message: defineTable({

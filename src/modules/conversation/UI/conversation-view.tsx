@@ -44,6 +44,17 @@ interface Props {
 }
 export const ConversationView = ({ projectId }: Props) => {
   const [copied, setCopied] = useState(false);
+  const [copiedId, setCopiedId] = useState<Id<"message"> | null>(null);
+  const handleCopyMessage = (message: string, id: Id<"message">) => {
+    if (copied) return;
+    if (copiedId === id) return;
+    navigator.clipboard.writeText(message);
+    setCopied(true);
+    setCopiedId(id);
+    toast.success("Message copied to clipboard");
+    setTimeout(() => setCopied(false), 1500);
+  };
+
   const [selectedConversationId, setselectedConversationId] =
     useState<Id<"conversations"> | null>(null);
   const [input, setInput] = useState("");
@@ -78,6 +89,11 @@ export const ConversationView = ({ projectId }: Props) => {
 
   const handleSubmitMessage = async (message: PromptInputMessage) => {
     if (!message.text || isProcessing) {
+      await ky.post("/api/message/cancel", {
+        json: {
+          projectId,
+        },
+      });
       setInput("");
       return;
     }
@@ -85,6 +101,7 @@ export const ConversationView = ({ projectId }: Props) => {
     let conversationId = activeConversationId;
     if (!conversationId) {
       conversationId = await handleCreateConversation();
+      if (!conversationId) return;
     }
 
     try {
@@ -94,20 +111,11 @@ export const ConversationView = ({ projectId }: Props) => {
           message: message.text,
         },
       });
-
       setInput("");
       return;
     } catch (error) {
       toast.error("failed to send message");
     }
-  };
-
-  const handleCopyMessage = (message: string) => {
-    if (copied) return;
-    navigator.clipboard.writeText(message);
-    setCopied(true);
-    toast.success("Message copied to clipboard");
-    setTimeout(() => setCopied(false), 1500);
   };
 
   return (
@@ -155,14 +163,15 @@ export const ConversationView = ({ projectId }: Props) => {
                 )}
               </MessageContent>
               {message.status === "completed" &&
-                message.role === "assistant" &&
-                index === (getMessage.length ?? 0) - 1 && (
+                message.role === "assistant" && (
                   <MessageActions>
                     <MessageAction
-                      onClick={() => handleCopyMessage(message.content)}
+                      onClick={() =>
+                        handleCopyMessage(message.content, message._id)
+                      }
                       label="copy"
                     >
-                      {copied ? (
+                      {copied && copiedId === message._id ? (
                         <CheckIcon className="size-3.5 text-green-500" />
                       ) : (
                         <CopyIcon className="size-3.5" />

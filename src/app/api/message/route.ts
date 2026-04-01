@@ -1,7 +1,7 @@
 import { convex } from "@/lib/convex-client";
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import z, { success } from "zod";
+import z from "zod";
 import { api } from "../../../../convex/_generated/api";
 import { Id } from "../../../../convex/_generated/dataModel";
 import { inngest } from "@/inngest/client";
@@ -31,6 +31,7 @@ export async function POST(request: Request) {
   // parse request body and validate using zod schema if invalid return error
   const body = await request.json();
   const { conversationId, message } = requestSchema.parse(body);
+  
 
   // get conversation by id using convex query if not found return error
   const conversation = await convex.query(api.system.getConversationById, {

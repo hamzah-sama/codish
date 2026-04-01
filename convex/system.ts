@@ -48,11 +48,12 @@ export const createMessage = mutation({
       content: args.content,
       projectId: args.projectId,
       role: args.role,
+      ...(args.status ? { status: args.status } : {}),
     });
 
     // update conversation's updateAt after creating a new message
     await ctx.db.patch("conversations", args.conversationId, {
-      updateAt: Date.now(),
+      updatedAt: Date.now(),
     });
 
     return messageId;
@@ -86,6 +87,24 @@ export const updateMessageContent = mutation({
     await ctx.db.patch("message", args.messageId, {
       content: args.content,
       status: "completed" as const,
+    });
+  },
+});
+
+export const updateMessageStatus = mutation({
+  args: {
+    messageId: v.id("message"),
+    internalKey: v.string(),
+    status: v.union(
+      v.literal("processing"),
+      v.literal("completed"),
+      v.literal("cancelled"),
+    ),
+  },
+  handler: async (ctx, args) => {
+    validateInternalKey(args.internalKey);
+    await ctx.db.patch("message", args.messageId, {
+      status: args.status,
     });
   },
 });
