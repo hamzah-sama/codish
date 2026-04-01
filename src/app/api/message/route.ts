@@ -30,8 +30,11 @@ export async function POST(request: Request) {
 
   // parse request body and validate using zod schema if invalid return error
   const body = await request.json();
+  const result = requestSchema.safeParse(body);
+  if (!result.success) {
+    return NextResponse.json({ error: result.error.message }, { status: 400 });
+  }
   const { conversationId, message } = requestSchema.parse(body);
-  
 
   // get conversation by id using convex query if not found return error
   const conversation = await convex.query(api.system.getConversationById, {
@@ -66,8 +69,6 @@ export async function POST(request: Request) {
     status: "processing",
     role: "assistant",
   });
-
-
 
   const event = await inngest.send({
     name: "message/sent",

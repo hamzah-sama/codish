@@ -28,6 +28,10 @@ export async function POST(request: Request) {
 
   // parse request body and validate using zod schema if invalid return error
   const body = await request.json();
+  const result = requestSchema.safeParse(body);
+  if (!result.success) {
+    return NextResponse.json({ error: result.error.message }, { status: 400 });
+  }
   const { projectId } = requestSchema.parse(body);
 
   const processingMessages = await convex.query(
@@ -39,7 +43,7 @@ export async function POST(request: Request) {
   );
 
   if (processingMessages.length === 0) {
-    return NextResponse.json({ succes: true, cancelled: false });
+    return NextResponse.json({ success: true, cancelled: false });
   }
 
   const cancellesdMessageIds = await Promise.all(
