@@ -124,6 +124,7 @@ export const updateConversationTitle = mutation({
   },
 });
 
+// get recent messages for context understanding, with an optional limit (default to 10)
 export const getRecentMessages = query({
   args: {
     internalKey: v.string(),
@@ -142,5 +143,31 @@ export const getRecentMessages = query({
 
     const limit = args.limit ?? 10;
     return messages.slice(-limit);
+  },
+});
+
+export const getProjectFiles = query({
+  args: {
+    internalKey: v.string(),
+    projectId: v.id("projects"),
+  },
+  handler: async (ctx, args) => {
+    validateInternalKey(args.internalKey);
+    return await ctx.db
+      .query("files")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .collect();
+  },
+});
+
+// used for agent to 'read file' tool, get file content by id
+export const getFileById = query({
+  args: {
+    internalKey: v.string(),
+    fileId: v.id("files"),
+  },
+  handler: async (ctx, args) => {
+    validateInternalKey(args.internalKey);
+    return await ctx.db.get(args.fileId);
   },
 });

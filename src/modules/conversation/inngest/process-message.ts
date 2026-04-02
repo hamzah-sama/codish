@@ -9,11 +9,14 @@ import {
   CODING_AGENT_SYSTEM_PROMPT,
   TITLE_GENERATOR_SYSTEM_PROMPT,
 } from "./constant";
+import { createReadFilesTool } from "./tools/read-files";
+import { createListFilesTool } from "./tools/list-files";
 
 interface MessageEvent {
   messageId: Id<"message">;
   conversationId: Id<"conversations">;
   message: string;
+  projectId: Id<"projects">;
 }
 
 // event name : message/sent , id : process-message function to process message when message is sent and update message content to "Failed to process message" when processing fails
@@ -49,7 +52,8 @@ export const processMessage = inngest.createFunction(
   },
 
   async ({ event, step }) => {
-    const { messageId, conversationId, message } = event.data as MessageEvent;
+    const { messageId, conversationId, message, projectId } =
+      event.data as MessageEvent;
 
     const internalKey = process.env.CODISH_CONVEX_INTERNAL_KEY;
     if (!internalKey) {
@@ -143,7 +147,10 @@ export const processMessage = inngest.createFunction(
         "An AI assistant that helps users with their questions and tasks.",
       system: systemPrompt,
       model: openai({ model: "gpt-4.1-mini" }),
-      tools: [],
+      tools: [
+        createListFilesTool({ internalKey, projectId }),
+        createReadFilesTool({ internalKey }),
+      ],
     });
 
     const network = createNetwork({
