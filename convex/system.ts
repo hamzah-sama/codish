@@ -63,14 +63,14 @@ export const createMessage = mutation({
 export const getProcessingMessage = query({
   args: {
     internalKey: v.string(),
-    projectId: v.id("projects"),
+    conversationId: v.id("conversations"),
   },
   handler: async (ctx, args) => {
     validateInternalKey(args.internalKey);
     return await ctx.db
       .query("message")
-      .withIndex("by_project_status", (q) =>
-        q.eq("projectId", args.projectId).eq("status", "processing"),
+      .withIndex("by_conversation_status", (q) =>
+        q.eq("conversationId", args.conversationId).eq("status", "processing"),
       )
       .collect();
   },

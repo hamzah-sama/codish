@@ -7,7 +7,7 @@ import { Id } from "../../../../../convex/_generated/dataModel";
 import { inngest } from "@/inngest/client";
 
 const requestSchema = z.object({
-  projectId: z.string(),
+  conversationId: z.string(),
 });
 
 export async function POST(request: Request) {
@@ -32,13 +32,13 @@ export async function POST(request: Request) {
   if (!result.success) {
     return NextResponse.json({ error: result.error.message }, { status: 400 });
   }
-  const { projectId } = requestSchema.parse(body);
+  const { conversationId } = requestSchema.parse(body);
 
   const processingMessages = await convex.query(
     api.system.getProcessingMessage,
     {
       internalKey,
-      projectId: projectId as Id<"projects">,
+      conversationId: conversationId as Id<"conversations">,
     },
   );
 
@@ -46,28 +46,26 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: true, cancelled: false });
   }
 
-  const cancellesdMessageIds = await Promise.all(
-    processingMessages.map(async (msg) => {
-      await inngest.send({
-        name: "message/cancel",
-        data: {
-          messageId: msg._id,
-        },
-      });
-
-      await convex.mutation(api.system.updateMessageStatus, {
-        internalKey,
+  const cancellesdMessageId = processingMessages.map(async (msg) => {
+    await inngest.send({
+      name: "message/cancel",
+      data: {
         messageId: msg._id,
-        status: "cancelled",
-      });
+      },
+    });
 
-      return msg._id;
-    }),
-  );
+    await convex.mutation(api.system.updateMessageStatus, {
+      internalKey,
+      messageId: msg._id,
+      status: "cancelled",
+    });
+
+    return msg._id;
+  });
 
   return NextResponse.json({
     success: true,
     cancelled: true,
-    messageIds: cancellesdMessageIds,
+    messageIds: cancellesdMessageId,
   });
 }

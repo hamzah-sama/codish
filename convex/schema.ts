@@ -41,12 +41,15 @@ export default defineSchema({
     projectId: v.id("projects"),
     content: v.string(),
     role: v.union(v.literal("user"), v.literal("assistant")),
-    status: v.optional(v.union(
-      v.literal("processing"),
-      v.literal("completed"),
-      v.literal("cancelled"),
-    )),
+    status: v.optional(
+      v.union(
+        v.literal("processing"),
+        v.literal("completed"),
+        v.literal("cancelled"),
+      ),
+    ),
   })
     .index("by_conversation", ["conversationId"])
+    .index("by_conversation_status", ["conversationId", "status"])
     .index("by_project_status", ["projectId", "status"]),
 });

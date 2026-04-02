@@ -56,7 +56,9 @@ export const ConversationView = ({ projectId }: Props) => {
       setCopied(true);
       setCopiedId(id);
       toast.success("Message copied to clipboard");
-      setTimeout(() => setCopied(false), 1500);
+      setTimeout(() => {
+        (setCopied(false), setCopiedId(null));
+      }, 1500);
     } catch (error) {
       toast.error("Failed to copy message");
     }
@@ -103,7 +105,7 @@ export const ConversationView = ({ projectId }: Props) => {
     try {
       await ky.post("/api/message/cancel", {
         json: {
-          projectId,
+          conversationId: activeConversationId,
         },
       });
     } catch (error) {
@@ -135,7 +137,6 @@ export const ConversationView = ({ projectId }: Props) => {
       return;
     } catch (error) {
       toast.error("failed to send message");
-      setInput("");
     }
   };
 
