@@ -5,9 +5,10 @@ import { NonRetriableError } from "inngest";
 import { convex } from "@/lib/convex-client";
 import { api } from "../../../../convex/_generated/api";
 import { DEFAULT_CONVERSATION_TITLE } from "../constant";
-import { TITLE_GENERATOR_SYSTEM_PROMPT } from "./constant";
-import { text } from "stream/consumers";
-import { success } from "zod";
+import {
+  CODING_AGENT_SYSTEM_PROMPT,
+  TITLE_GENERATOR_SYSTEM_PROMPT,
+} from "./constant";
 
 interface MessageEvent {
   messageId: Id<"message">;
@@ -110,12 +111,37 @@ export const processMessage = inngest.createFunction(
       }
     }
 
+    // fetch recent messages to get conversation context
+    const recentMessages = await step.run("get-recent-messages", async () => {
+      return await convex.query(api.system.getRecentMessages, {
+        internalKey,
+        conversationId,
+        limit: 10,
+      });
+    });
+
+    // build system prompt with conversation history for better context understanding (exclude th current processing message)
+    let systemPrompt = CODING_AGENT_SYSTEM_PROMPT;
+
+    // filter out current processing message and empty messages
+    const contextMessages = recentMessages.filter(
+      (m) => m._id !== messageId && m.content.trim() !== "",
+    );
+
+    if (contextMessages.length > 0) {
+      const historyText = contextMessages
+        .map((msg) => `${msg.role.toUpperCase()}: ${msg.content}`)
+        .join("\n\n");
+
+      systemPrompt += `\n\n## Previous Conversation (for context only - do NOT repeat these responses):\n${historyText}\n\n## Current Request:\nRespond ONLY to the user's new message below. Do not repeat or reference your previous responses.`;
+    }
+
     // create ai agent
     const agent = createAgent({
       name: "codish",
       description:
         "An AI assistant that helps users with their questions and tasks.",
-      system: `You are Codish, an AI assistant that helps users with their questions and tasks. You are integrated with various tools and APIs to provide accurate and helpful responses. Always be polite and concise in your responses. If you don't know the answer to a question, say you don't know instead of making something up.`,
+      system: systemPrompt,
       model: openai({ model: "gpt-4.1-mini" }),
       tools: [],
     });
