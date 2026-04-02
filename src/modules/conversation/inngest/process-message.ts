@@ -1,5 +1,5 @@
 import { inngest } from "@/inngest/client";
-import { createAgent, openai } from "@inngest/agent-kit";
+import { createAgent, createNetwork, openai } from "@inngest/agent-kit";
 import { Id } from "../../../../convex/_generated/dataModel";
 import { NonRetriableError } from "inngest";
 import { convex } from "@/lib/convex-client";
@@ -55,7 +55,7 @@ export const processMessage = inngest.createFunction(
       throw new NonRetriableError("Internal key not found");
     }
 
-    await step.sleep("waiting for db-sync", "30s");
+    await step.sleep("waiting for db-sync", "1s");
 
     const conversation = await step.run("get-conversation", async () => {
       return await convex.query(api.system.getConversationById, {
@@ -67,15 +67,6 @@ export const processMessage = inngest.createFunction(
     if (!conversation) {
       throw new NonRetriableError("Conversation not found");
     }
-
-    // update message content to "Processing..." when message is sent
-    await step.run("update-message-content", async () => {
-      await convex.mutation(api.system.updateMessageContent, {
-        internalKey,
-        messageId,
-        content: "hardcoded response from inngest function",
-      });
-    });
 
     // create auto generation title
     const shouldGenerateTitle =
@@ -119,9 +110,67 @@ export const processMessage = inngest.createFunction(
       }
     }
 
+    // create ai agent
+    const agent = createAgent({
+      name: "codish",
+      description:
+        "An AI assistant that helps users with their questions and tasks.",
+      system: `You are Codish, an AI assistant that helps users with their questions and tasks. You are integrated with various tools and APIs to provide accurate and helpful responses. Always be polite and concise in your responses. If you don't know the answer to a question, say you don't know instead of making something up.`,
+      model: openai({ model: "gpt-4.1-mini" }),
+      tools: [],
+    });
+
+    const network = createNetwork({
+      name: "codish-network",
+      agents: [agent],
+      maxIter: 20,
+      router: ({ network }) => {
+        const lastResult = network.state.results.at(-1);
+        const hasTextResponse = lastResult?.output.some(
+          (t) => t.type === "text" && t.role === "assistant",
+        );
+        const hasToolCalls = lastResult?.output.some(
+          (t) => t.type === "tool_call" && t.role === "assistant",
+        );
+        if (hasTextResponse && !hasToolCalls) {
+          return undefined;
+        }
+        return agent;
+      },
+    });
+
+    const result = await network.run(message);
+
+    const lastResult = result.state.results.at(-1);
+    const textMessage = lastResult?.output.find(
+      (t) => t.type === "text" && t.role === "assistant",
+    );
+
+    let AgentResponse =
+      "I processed your message, let me know if you need anything else.";
+
+    if (textMessage?.type === "text") {
+      AgentResponse =
+        typeof textMessage.content === "string"
+          ? textMessage.content.trim()
+          : textMessage.content
+              .map((t) => t.text)
+              .join("")
+              .trim();
+    }
+
+    await step.run("update-message-content-with-response", async () => {
+      await convex.mutation(api.system.updateMessageContent, {
+        internalKey,
+        messageId,
+        content: AgentResponse,
+      });
+    });
+
     return {
       success: true,
       messageId,
+      conversationId,
     };
   },
 );
