@@ -171,3 +171,19 @@ export const getFileById = query({
     return await ctx.db.get(args.fileId);
   },
 });
+
+// used for agent to 'update file'
+export const updateFileContent = mutation({
+  args: {
+    internalKey: v.string(),
+    fileId: v.id("files"),
+    content: v.string(),
+  },
+  handler: async (ctx, args) => {
+    validateInternalKey(args.internalKey);
+    await ctx.db.patch("files", args.fileId, {
+      content: args.content,
+      updatedAt: Date.now(),
+    });
+  },
+});

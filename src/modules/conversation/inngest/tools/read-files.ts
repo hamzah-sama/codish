@@ -22,6 +22,9 @@ export const createReadFilesTool = ({ internalKey }: Props) => {
       fileIds: z.array(z.string()).describe("Array of file Ids to read"),
     }),
     handler: async (params, { step: toolStep }) => {
+      if (!toolStep) {
+        return "Error: step context not available";
+      }
       const parsed = paramsSchema.safeParse(params);
       if (!parsed.success) {
         return `Error: ${parsed.error.issues[0].message}`;
@@ -46,13 +49,13 @@ export const createReadFilesTool = ({ internalKey }: Props) => {
                 content: file.content,
               });
             }
-
-            if (result.length === 0) {
-              return "Error : no files found with provide IDs, use listFiles to get valid Ids ";
-            }
-
-            return JSON.stringify(result);
           }
+
+          if (result.length === 0) {
+            return "Error : no files found with provide IDs, use listFiles to get valid Ids ";
+          }
+
+          return JSON.stringify(result);
         });
       } catch (error) {
         return `Error reading files: ${error instanceof Error ? error.message : "Unknown error"}`;

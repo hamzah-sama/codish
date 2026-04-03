@@ -11,6 +11,7 @@ import {
 } from "./constant";
 import { createReadFilesTool } from "./tools/read-files";
 import { createListFilesTool } from "./tools/list-files";
+import { createUpdateFilesTool } from "./tools/update-files";
 
 interface MessageEvent {
   messageId: Id<"message">;
@@ -150,6 +151,7 @@ export const processMessage = inngest.createFunction(
       tools: [
         createListFilesTool({ internalKey, projectId }),
         createReadFilesTool({ internalKey }),
+        createUpdateFilesTool({ internalKey }),
       ],
     });
 

@@ -16,6 +16,9 @@ export const createListFilesTool = ({ internalKey, projectId }: Props) => {
       "List all files and folders in the project. Returns names, IDs, types, and parentId for each item. Items with parentId: null are at root level. Use the parentId to understand the folder structure - items with the same parentId are in the same folder.",
     parameters: z.object({}),
     handler: async (_, { step: toolStep }) => {
+      if (!toolStep) {
+        return "Error: step context not available";
+      }
       try {
         return await toolStep?.run("list-files", async () => {
           const files = await convex.query(api.system.getProjectFiles, {
