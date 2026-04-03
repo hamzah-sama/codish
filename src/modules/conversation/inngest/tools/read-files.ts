@@ -14,7 +14,7 @@ const paramsSchema = z.object({
     .array(z.string().min(1, "File ID cannot be empty"))
     .min(1, "At least one file ID must be provided"),
 });
-export const createReadFilesTool = ({ internalKey , projectId}: Props) => {
+export const createReadFilesTool = ({ internalKey, projectId }: Props) => {
   return createTool({
     name: "read_files",
     description:
@@ -47,7 +47,7 @@ export const createReadFilesTool = ({ internalKey , projectId}: Props) => {
               return `Error: file with ID ${fileId} is not belong to the current project`;
             }
 
-            if (file && file.content) {
+            if (file && file.content !== undefined && file.type === "file") {
               result.push({
                 id: file._id,
                 name: file.name,

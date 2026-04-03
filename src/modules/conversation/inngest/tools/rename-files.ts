@@ -52,12 +52,13 @@ export const createRenameFilesTool = ({ internalKey, projectId }: Props) => {
 
       try {
         return await toolStep.run("rename-file", async () => {
-          await convex.mutation(api.system.renameFIles, {
+          await convex.mutation(api.system.renameFiles, {
             internalKey,
             newName,
             fileId: fileId as Id<"files">,
             projectId,
           });
+          return `File with id ${fileId} has been renamed to ${newName}`;
         });
       } catch (error) {
         return `Error rename file : ${error instanceof Error ? error.message : "unknown error"}`;

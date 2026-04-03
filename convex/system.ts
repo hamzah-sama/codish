@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { Id } from "./_generated/dataModel";
 
 // validate internal key to prevent unauthorized access and not depend on convex auth
 const validateInternalKey = (key: string) => {
@@ -189,7 +190,7 @@ export const updateFileContent = mutation({
 });
 
 // used for agents to 'rename file
-export const renameFIles = mutation({
+export const renameFiles = mutation({
   args: {
     internalKey: v.string(),
     fileId: v.id("files"),
@@ -213,7 +214,7 @@ export const renameFIles = mutation({
     const existing = siblings.find(
       (sibling) =>
         sibling.name === args.newName &&
-        sibling._id !== file.type &&
+        sibling._id !== file._id &&
         sibling.type === file.type,
     );
 
@@ -227,5 +228,42 @@ export const renameFIles = mutation({
       name: args.newName,
       updatedAt: Date.now(),
     });
+  },
+});
+
+// used for agent to 'delete file'
+export const deleteFile = mutation({
+  args: {
+    fileId: v.id("files"),
+    internalKey: v.string(),
+    projectId: v.id("projects"),
+  },
+  handler: async (ctx, args) => {
+    validateInternalKey(args.internalKey);
+
+    const recursivelyDelete = async (fileId: Id<"files">) => {
+      const currentFile = await ctx.db.get("files", fileId);
+      if (!currentFile) return;
+
+      if (currentFile.type === "folder") {
+        const children = await ctx.db
+          .query("files")
+          .withIndex("by_parent", (q) => q.eq("parentId", fileId))
+          .collect();
+        for (const child of children) {
+          await recursivelyDelete(child._id);
+        }
+      }
+
+      if (currentFile.storageId) {
+        await ctx.storage.delete(currentFile.storageId);
+      }
+
+      await ctx.db.delete(fileId);
+    };
+
+    await recursivelyDelete(args.fileId);
+
+    await ctx.db.patch("projects", args.projectId, { updatedAt: Date.now() });
   },
 });
