@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { Id } from "./_generated/dataModel";
+import { file } from "zod";
 
 // validate internal key to prevent unauthorized access and not depend on convex auth
 const validateInternalKey = (key: string) => {
@@ -228,6 +229,10 @@ export const renameFiles = mutation({
       name: args.newName,
       updatedAt: Date.now(),
     });
+
+    await ctx.db.patch("projects", args.projectId, {
+      updatedAt: Date.now(),
+    });
   },
 });
 
@@ -265,5 +270,47 @@ export const deleteFile = mutation({
     await recursivelyDelete(args.fileId);
 
     await ctx.db.patch("projects", args.projectId, { updatedAt: Date.now() });
+  },
+});
+
+export const createFolder = mutation({
+  args: {
+    internalKey: v.string(),
+    projectId: v.id("projects"),
+    name: v.string(),
+    parentId: v.optional(v.id("files")),
+  },
+  handler: async (ctx, args) => {
+    validateInternalKey(args.internalKey);
+    const files = await ctx.db
+      .query("files")
+      .withIndex("by_project_parent", (q) =>
+        q.eq("projectId", args.projectId).eq("parentId", args.parentId),
+      )
+      .collect();
+
+    const existingFiles = files.find(
+      (file) => file.name === args.name && file.type === "folder",
+    );
+
+    if (existingFiles) {
+      throw new Error(
+        `folder with name ${args.name} already exist in this location`,
+      );
+    }
+
+    const newFolderId = await ctx.db.insert("files", {
+      name: args.name,
+      parentId: args.parentId,
+      projectId: args.projectId,
+      type: "folder",
+      updatedAt: Date.now(),
+    });
+
+    await ctx.db.patch("projects", args.projectId, {
+      updatedAt: Date.now(),
+    });
+
+    return newFolderId;
   },
 });
