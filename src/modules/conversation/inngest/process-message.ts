@@ -12,6 +12,7 @@ import {
 import { createReadFilesTool } from "./tools/read-files";
 import { createListFilesTool } from "./tools/list-files";
 import { createUpdateFilesTool } from "./tools/update-files";
+import { createRenameFilesTool } from "./tools/rename-files";
 
 interface MessageEvent {
   messageId: Id<"message">;
@@ -150,8 +151,9 @@ export const processMessage = inngest.createFunction(
       model: openai({ model: "gpt-4.1-mini" }),
       tools: [
         createListFilesTool({ internalKey, projectId }),
-        createReadFilesTool({ internalKey }),
-        createUpdateFilesTool({ internalKey }),
+        createReadFilesTool({ internalKey, projectId }),
+        createUpdateFilesTool({ internalKey, projectId }),
+        createRenameFilesTool({ internalKey, projectId }),
       ],
     });
 

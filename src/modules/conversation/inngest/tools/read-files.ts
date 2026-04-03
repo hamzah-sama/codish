@@ -6,6 +6,7 @@ import { Id } from "../../../../../convex/_generated/dataModel";
 
 interface Props {
   internalKey: string;
+  projectId: Id<"projects">;
 }
 
 const paramsSchema = z.object({
@@ -13,7 +14,7 @@ const paramsSchema = z.object({
     .array(z.string().min(1, "File ID cannot be empty"))
     .min(1, "At least one file ID must be provided"),
 });
-export const createReadFilesTool = ({ internalKey }: Props) => {
+export const createReadFilesTool = ({ internalKey , projectId}: Props) => {
   return createTool({
     name: "read_files",
     description:
@@ -41,6 +42,10 @@ export const createReadFilesTool = ({ internalKey }: Props) => {
               internalKey,
               fileId: fileId as Id<"files">,
             });
+
+            if (file?.projectId !== projectId) {
+              return `Error: file with ID ${fileId} is not belong to the current project`;
+            }
 
             if (file && file.content) {
               result.push({

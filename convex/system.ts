@@ -187,3 +187,45 @@ export const updateFileContent = mutation({
     });
   },
 });
+
+// used for agents to 'rename file
+export const renameFIles = mutation({
+  args: {
+    internalKey: v.string(),
+    fileId: v.id("files"),
+    newName: v.string(),
+    projectId: v.id("projects"),
+  },
+  handler: async (ctx, args) => {
+    validateInternalKey(args.internalKey);
+    const file = await ctx.db.get(args.fileId);
+    if (!file) {
+      throw new Error("file not found");
+    }
+
+    const siblings = await ctx.db
+      .query("files")
+      .withIndex("by_project_parent", (q) =>
+        q.eq("projectId", file.projectId).eq("parentId", file.parentId),
+      )
+      .collect();
+
+    const existing = siblings.find(
+      (sibling) =>
+        sibling.name === args.newName &&
+        sibling._id !== file.type &&
+        sibling.type === file.type,
+    );
+
+    if (existing) {
+      throw new Error(
+        `A ${existing.type} with this name already exists in this location.`,
+      );
+    }
+
+    await ctx.db.patch("files", args.fileId, {
+      name: args.newName,
+      updatedAt: Date.now(),
+    });
+  },
+});

@@ -186,7 +186,7 @@ export const rename = mutation({
     );
 
     if (existing) {
-      throw new ConvexError(
+      throw new Error(
         `A ${existing.type} with this name already exists in this location.`,
       );
     }
@@ -241,7 +241,7 @@ export const updateContent = mutation({
     const { fileId, content } = args;
     if (!fileId) return;
     const file = await getFilebyId(ctx, fileId);
-    if(file.type !== "file") {
+    if (file.type !== "file") {
       throw new ConvexError("Only files can be updated");
     }
     await verifyAuthAndOwnership(ctx, file.projectId);

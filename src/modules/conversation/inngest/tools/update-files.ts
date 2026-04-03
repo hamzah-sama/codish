@@ -6,6 +6,7 @@ import { Id } from "../../../../../convex/_generated/dataModel";
 
 interface Props {
   internalKey: string;
+  projectId: Id<"projects">;
 }
 
 const paramsSchema = z.object({
@@ -15,7 +16,7 @@ const paramsSchema = z.object({
     .describe("ID of the file to update"),
   content: z.string().describe("New content for the file"),
 });
-export const createUpdateFilesTool = ({ internalKey }: Props) => {
+export const createUpdateFilesTool = ({ internalKey, projectId }: Props) => {
   return createTool({
     name: "update_file",
     description: "Update the content of a file in the project",
@@ -49,6 +50,10 @@ export const createUpdateFilesTool = ({ internalKey }: Props) => {
 
       if (file.type === "folder") {
         return `Error : ${fileId} is a folder not a file, you can't update a file content`;
+      }
+
+      if (file.projectId !== projectId) {
+        return `Error: file with ID ${fileId} is not belong to the current project`;
       }
 
       try {
