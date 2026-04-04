@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { Id } from "./_generated/dataModel";
 import { file } from "zod";
+import { id } from "date-fns/locale";
 
 // validate internal key to prevent unauthorized access and not depend on convex auth
 const validateInternalKey = (key: string) => {
@@ -312,5 +313,52 @@ export const createFolder = mutation({
     });
 
     return newFolderId;
+  },
+});
+
+export const createFiles = mutation({
+  args: {
+    internalKey: v.string(),
+    projectId: v.id("projects"),
+    parentId: v.optional(v.id("files")),
+    files: v.array(v.object({ name: v.string(), content: v.string() })),
+  },
+  handler: async (ctx, args) => {
+    validateInternalKey(args.internalKey);
+    const existingFiles = await ctx.db
+      .query("files")
+      .withIndex("by_project_parent", (q) =>
+        q.eq("projectId", args.projectId).eq("parentId", args.parentId),
+      )
+      .collect();
+
+    const result: { name: string; fileId: string; error?: string }[] = [];
+    for (const file of args.files) {
+      const existing = existingFiles.find(
+        (f) => f.name === file.name && f.type === "file",
+      );
+
+      if (existing) {
+        result.push({
+          name: file.name,
+          fileId: existing._id,
+          error: "File already exists",
+        });
+        continue;
+      }
+
+      const newFileId = await ctx.db.insert("files", {
+        name: file.name,
+        content: file.content,
+        parentId: args.parentId,
+        projectId: args.projectId,
+        type: "file",
+        updatedAt: Date.now(),
+      });
+
+      result.push({ name: file.name, fileId: newFileId });
+    }
+
+    return result;
   },
 });
