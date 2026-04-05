@@ -10,6 +10,21 @@ import { Doc, Id } from "./_generated/dataModel";
 
 // Query section
 
+export const getFiles = query({
+  args: {
+    projectId: v.id("projects"),
+  },
+  handler: async (ctx, args) => {
+    const { projectId } = args;
+    await verifyAuthAndOwnership(ctx, projectId);
+    const files = await ctx.db
+      .query("files")
+      .withIndex("by_project", (q) => q.eq("projectId", projectId))
+      .collect();
+    return files;
+  },
+});
+
 export const getFolderContents = query({
   args: {
     projectId: v.id("projects"),
