@@ -79,3 +79,27 @@ export const renameProject = mutation({
     await ctx.db.patch(project._id, { name: args.name, updatedAt: Date.now() });
   },
 });
+
+export const updateProjectSettings = mutation({
+  args: {
+    id: v.id("projects"),
+    settings: v.optional(
+      v.object({
+        installCommand: v.optional(v.string()),
+        devCommand: v.optional(v.string()),
+      }),
+    ),
+  },
+  handler: async (ctx, args) => {
+    const project = await verifyAuthAndOwnership(ctx, args.id);
+    await ctx.db.patch(project._id, { settings: args.settings });
+  },
+});
+
+export const getProjectSettings = query({
+  args: { id: v.id("projects") },
+  handler: async (ctx, args) => {
+    const project = await verifyAuthAndOwnership(ctx, args.id);
+    return project.settings;
+  },
+});

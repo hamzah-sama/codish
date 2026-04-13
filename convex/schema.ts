@@ -13,6 +13,12 @@ export default defineSchema({
         v.literal("failed"),
       ),
     ),
+    settings: v.optional(
+      v.object({
+        installCommand: v.optional(v.string()),
+        devCommand: v.optional(v.string()),
+      }),
+    ),
   })
     .index("by_owner", ["ownerId"])
     .index("by_updated_at", ["ownerId", "updatedAt"]),

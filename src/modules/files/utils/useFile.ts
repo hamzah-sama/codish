@@ -148,6 +148,9 @@ export const useGetFolderContents = ({
   );
 };
 
+export const useGetFiles = (projectId: Id<"projects">) => {
+  return useQuery(api.files.getFiles, { projectId });
+};
 
 export const useGetActiveFile = ({ id }: { id: Id<"files"> | null }) =>
   useQuery(api.files.getActiveFile, id ? { id } : "skip");
