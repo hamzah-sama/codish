@@ -3,12 +3,26 @@ import { Id } from "../../../../convex/_generated/dataModel";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useGetFiles } from "@/modules/files/utils/useFile";
 import { buildFileTree, getFilePath } from "../utils/file-tree";
-import { WritableStream } from "stream/web";
 
-// single webContainer instance
+/* 
+big picture:
+        1. get files from database (convex)
+        2. run nodejs on browser
+        3. install dependencies (npm install)
+        4. run dev command (npm run dev)
+        5. show preview + terminal output
+        inside a Next.js JSX block.
+*/
+
+// because webContainer is hard to boot, so we use single webContainer instance
 let webContainerInstance: WebContainer | null = null;
 let bootPromise: Promise<WebContainer> | null = null;
 
+/*
+1. if there is an instance, reuse it
+2. if there is no instance, boot it once
+3. it can prevent booting multiple times
+*/
 const getWebContainer = async (): Promise<WebContainer> => {
   if (webContainerInstance) {
     return webContainerInstance;
@@ -22,6 +36,7 @@ const getWebContainer = async (): Promise<WebContainer> => {
   return webContainerInstance;
 };
 
+// used to restart environment and clear memory
 const teardownWebContainer = () => {
   if (webContainerInstance) {
     webContainerInstance.teardown();
@@ -39,26 +54,24 @@ interface Props {
   };
 }
 
-export const useWebContainer = async ({
-  projectId,
-  enabled,
-  settings,
-}: Props) => {
+export const useWebContainer = ({ projectId, enabled, settings }: Props) => {
+  // the status of webContainer, iddle = not running, booting = start container, installing - npm i , running = server is up, error = failed
   const [status, setStatus] = useState<
     "idle" | "booting" | "running" | "error" | "installing"
   >("idle");
 
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null); // URL from sever (localhost on browser sandbox)
   const [error, setError] = useState<string | null>(null);
   const [restartKey, setRestartKey] = useState(0);
-  const [terminalOuput, setTerminalOuput] = useState("");
+  const [terminalOutput, setTerminalOuput] = useState(""); // simulate terminal output(npm install, npm run dev, logs, etc.)
 
   const containerRef = useRef<WebContainer | null>(null);
   const hasStartedRef = useRef(false);
 
   //   fetch files from convex
-  const files = useGetFiles(projectId);
+  const files = useGetFiles(projectId); //get files from backend (convex)
 
+  // start webContainer, start if enabled = true , files is not empty, not started yet
   useEffect(() => {
     if (!enabled || !files || files.length === 0 || hasStartedRef.current)
       return;
@@ -74,17 +87,17 @@ export const useWebContainer = async ({
           setTerminalOuput((prev) => prev + data);
         };
 
-        const container = await getWebContainer();
-        containerRef.current = container;
+        const container = await getWebContainer(); // boot webContainer
+        containerRef.current = container; // save instance webContainer to containerRef
 
-        const fileTree = buildFileTree(files);
+        const fileTree = buildFileTree(files); // convert flat convex files to nestes fileSystemTree
 
-        await container.mount(fileTree);
+        await container.mount(fileTree); // mount files, write files to container
 
         container.on("server-ready", (ports, url) => {
           setPreviewUrl(url);
           setStatus("running");
-        });
+        }); // when server is ready (npm run dev is success), preview URl is ready
 
         setStatus("installing");
 
@@ -95,7 +108,7 @@ export const useWebContainer = async ({
 
         appendOutput(`$ ${installCmd}\n`);
 
-        const installProcess = await container.spawn(installBin, installArgs);
+        const installProcess = await container.spawn(installBin, installArgs); // install dependencies ( npm i)
 
         installProcess.output.pipeTo(
           new WritableStream({
@@ -103,7 +116,7 @@ export const useWebContainer = async ({
               appendOutput(data);
             },
           }),
-        );
+        ); // all stdout is go to state react
 
         const installExitCode = await installProcess.exit;
 
@@ -111,7 +124,7 @@ export const useWebContainer = async ({
           throw new Error(
             `Error: ${installCmd} failed with code ${installExitCode}`,
           );
-        }
+        } //if its fail, throw an error
 
         const devCmd = settings?.devCommand || "npm run dev";
 
@@ -119,7 +132,7 @@ export const useWebContainer = async ({
 
         appendOutput(`$ ${devCmd}\n`);
 
-        const devProcess = await container.spawn(devBin, devArgs);
+        const devProcess = await container.spawn(devBin, devArgs); // run dev
 
         devProcess.output.pipeTo(
           new WritableStream({
@@ -143,7 +156,7 @@ export const useWebContainer = async ({
     settings?.installCommand,
   ]);
 
-  //   sync file change (hot reload)
+  //   sync file change (hot reload), it will trigger when files change while webContainer is running
   useEffect(() => {
     const container = containerRef.current;
     if (!container || !files || status !== "running") return;
@@ -154,11 +167,11 @@ export const useWebContainer = async ({
       if (file.type !== "file" || file.storageId || !file.content) continue;
 
       const filePath = getFilePath(file, filesMap);
-      container.fs.writeFile(filePath, file.content);
+      container.fs.writeFile(filePath, file.content); // update files directly in container , so it will hot reload
     }
   }, [files, status]);
 
-  //   reset when disabled
+  //   reset when disabled, when user close preview / tab, reset state but container is not destroyed
   useEffect(() => {
     if (!enabled) {
       hasStartedRef.current = false;
@@ -168,7 +181,7 @@ export const useWebContainer = async ({
     }
   }, [enabled]);
 
-  //   restart the entire web container process
+  //   restart the entire web container process (restart manual, teardown container, retrigger useeffect via restartKey, clear all states)
   const restart = useCallback(() => {
     teardownWebContainer();
     setRestartKey((prev) => prev + 1);
@@ -184,6 +197,26 @@ export const useWebContainer = async ({
     previewUrl,
     error,
     restart,
-    terminalOuput,
+    terminalOutput,
   };
 };
+
+/*
+the workflow : 
+enabled = true
+   ↓
+get files (Convex)
+   ↓
+boot WebContainer
+   ↓
+mount file system
+   ↓
+npm install
+   ↓
+npm run dev
+   ↓
+server-ready → get URL
+   ↓
+preview is running
+   ↓
+file changes → writeFile → hot reload */

@@ -4,6 +4,7 @@ import { FaGithub } from "react-icons/fa";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { CodeEditorView } from "../editor/code-editor";
+import { PreviewView } from "../preview/components/preview-view";
 
 interface Props {
   projectId: Id<"projects">;
@@ -44,7 +45,9 @@ export const WorkspaceSection = ({ projectId }: Props) => {
       {tab === "code" ? (
         <CodeEditorView projectId={projectId} />
       ) : (
-        <div className="p-4">Preview Section for project {projectId}</div>
+        <div className="p-4 flex-1 min-h-0">
+          <PreviewView projectId={projectId} />
+        </div>
       )}
     </div>
   );

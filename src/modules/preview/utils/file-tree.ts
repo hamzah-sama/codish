@@ -32,7 +32,9 @@ export const buildFileTree = (files: fileDoc[]): FileSystemTree => {
 
       if (isLast) {
         if (file.type === "folder") {
-          current[part] = { directory: {} };
+          if (!current[part]) {
+            current[part] = { directory: {} };
+          }
         } else if (!file.storageId && file.content !== undefined) {
           current[part] = { file: { contents: file.content } };
         }

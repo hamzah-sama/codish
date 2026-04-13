@@ -67,3 +67,31 @@ export const useRenameProject = () => {
     },
   );
 };
+
+export const useUpdateProjectSettings = () => {
+  return useMutation(api.projects.updateProjectSettings).withOptimisticUpdate(
+    (localStore, args) => {
+      const existingProject = localStore.getQuery(api.projects.getProjectById, {
+        id: args.id,
+      });
+      if (existingProject !== undefined && existingProject !== null) {
+        localStore.setQuery(
+          api.projects.getProjectById,
+          { id: args.id },
+          {
+            ...existingProject,
+            settings: args.settings,
+            updatedAt: Date.now(),
+          },
+        );
+      }
+    },
+  );
+};
+
+export const useGetProjectSettings = (projectId?: Id<"projects">) => {
+  return useQuery(
+    api.projects.getProjectSettings,
+    projectId ? { id: projectId } : "skip",
+  );
+};
