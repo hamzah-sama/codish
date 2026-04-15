@@ -19,6 +19,8 @@ export default defineSchema({
         devCommand: v.optional(v.string()),
       }),
     ),
+    githubOwner: v.optional(v.string()),
+    githubRepo: v.optional(v.string()),
   })
     .index("by_owner", ["ownerId"])
     .index("by_updated_at", ["ownerId", "updatedAt"]),

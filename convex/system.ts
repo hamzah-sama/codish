@@ -161,6 +161,17 @@ export const getProjectFiles = query({
   },
 });
 
+export const getProjectById = query({
+  args: {
+    internalKey: v.string(),
+    projectId: v.id("projects"),
+  },
+  handler: async (ctx, args) => {
+    validateInternalKey(args.internalKey);
+    return await ctx.db.get(args.projectId);
+  },
+});
+
 // used for agent to 'read file' tool, get file content by id
 export const getFileById = query({
   args: {
@@ -495,6 +506,8 @@ export const createProjectByImport = mutation({
     internalKey: v.string(),
     name: v.string(),
     ownerId: v.string(),
+    githubOwner: v.string(),
+    githubRepo: v.string(),
   },
   handler: async (ctx, args) => {
     validateInternalKey(args.internalKey);
@@ -502,6 +515,8 @@ export const createProjectByImport = mutation({
       name: args.name,
       ownerId: args.ownerId,
       importStatus: "importing",
+      githubOwner: args.githubOwner,
+      githubRepo: args.githubRepo,
       updatedAt: Date.now(),
     });
     return projectId;

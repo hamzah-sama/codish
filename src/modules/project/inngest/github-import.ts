@@ -6,12 +6,10 @@ import { Id } from "../../../../convex/_generated/dataModel";
 import { Octokit } from "octokit";
 import { isBinaryFile } from "isbinaryfile";
 import ky from "ky";
+import { clerkClient } from "@clerk/nextjs/server";
 
 interface ImportGithubRepoEvent {
   projectId: string;
-  githubToken: string;
-  owner: string;
-  repo: string;
 }
 
 export const githubImport = inngest.createFunction(
@@ -36,11 +34,42 @@ export const githubImport = inngest.createFunction(
     event: "github/import",
   },
   async ({ event, step }) => {
-    const { projectId, githubToken, owner, repo } =
-      event.data as ImportGithubRepoEvent;
+    const { projectId } = event.data as ImportGithubRepoEvent;
+
     const internalKey = process.env.CODISH_CONVEX_INTERNAL_KEY;
     if (!internalKey) {
       throw new NonRetriableError("Internal key not found");
+    }
+
+    const project = await step.run("get-project", async () => {
+      return await convex.query(api.system.getProjectById, {
+        internalKey,
+        projectId: projectId as Id<"projects">,
+      });
+    });
+
+    if (!project) {
+      throw new NonRetriableError("Project not found");
+    }
+
+    const { githubOwner: owner, githubRepo: repo, ownerId } = project;
+
+    if (!owner || !repo) {
+      throw new NonRetriableError("Missing GitHub repo info");
+    }
+
+    const githubToken = await step.run("get-github-token", async () => {
+      const client = await clerkClient();
+      const tokens = await client.users.getUserOauthAccessToken(
+        ownerId,
+        "github",
+      );
+
+      return tokens.data?.[0]?.token;
+    });
+
+    if (!githubToken) {
+      throw new NonRetriableError("GitHub not connected");
     }
 
     const octokit = new Octokit({ auth: githubToken });

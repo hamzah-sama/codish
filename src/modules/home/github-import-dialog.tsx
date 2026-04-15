@@ -59,7 +59,7 @@ export const GithubImportDialog = ({ open, onOpenChange }: Props) => {
 
           if (body.error.includes("GitHub not connected")) {
             toast.error(
-              "Github not connected, please reconnect to your github account",
+              "GitHub not connected, please reconnect to your gitHub account",
               {
                 action: {
                   label: "Connect",
@@ -83,7 +83,7 @@ export const GithubImportDialog = ({ open, onOpenChange }: Props) => {
         <DialogHeader>
           <DialogTitle>Import from Github</DialogTitle>
           <DialogDescription>
-            Enter a Github repository url to import, A new peoject will be
+            Enter a Github repository url to import, A new project will be
             ceated based on repository content
           </DialogDescription>
         </DialogHeader>
