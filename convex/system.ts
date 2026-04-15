@@ -532,3 +532,51 @@ export const generateUploadUrl = mutation({
     return await ctx.storage.generateUploadUrl();
   },
 });
+
+export const updateExportStatus = mutation({
+  args: {
+    internalKey: v.string(),
+    projectId: v.id("projects"),
+    status: v.optional(
+      v.union(
+        v.literal("exporting"),
+        v.literal("completed"),
+        v.literal("failed"),
+        v.literal("cancelled"),
+      ),
+    ),
+    exportRepoUrl: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    validateInternalKey(args.internalKey);
+    await ctx.db.patch("projects", args.projectId, {
+      exportStatus: args.status,
+      updatedAt: Date.now(),
+      exportRepoUrl: args.exportRepoUrl,
+    });
+  },
+});
+
+export const getProjectwithUrl = query({
+  args: {
+    internalKey: v.string(),
+    projectId: v.id("projects"),
+  },
+  handler: async (ctx, args) => {
+    validateInternalKey(args.internalKey);
+    const files = await ctx.db
+      .query("files")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .collect();
+
+    return await Promise.all(
+      files.map(async (file) => {
+        if (file.storageId) {
+          const url = await ctx.storage.getUrl(file.storageId);
+          return { ...file, storageUrl: url };
+        }
+        return { ...file, storageUrl: null };
+      }),
+    );
+  },
+});

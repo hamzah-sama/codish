@@ -13,6 +13,15 @@ export default defineSchema({
         v.literal("failed"),
       ),
     ),
+    exportStatus: v.optional(
+      v.union(
+        v.literal("exporting"),
+        v.literal("completed"),
+        v.literal("failed"),
+        v.literal("cancelled"),
+      ),
+    ),
+    exportRepoUrl: v.optional(v.string()),
     settings: v.optional(
       v.object({
         installCommand: v.optional(v.string()),

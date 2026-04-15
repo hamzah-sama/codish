@@ -5,6 +5,7 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { CodeEditorView } from "../editor/code-editor";
 import { PreviewView } from "../preview/components/preview-view";
+import { ExportPopover } from "./export-popover";
 
 interface Props {
   projectId: Id<"projects">;
@@ -38,9 +39,7 @@ export const WorkspaceSection = ({ projectId }: Props) => {
             <AppWindowIcon className=" text-muted-foreground" /> Preview
           </div>
         </div>
-        <div className="flex items-center gap-2 pl-2 pr-4 py-1 border-l cursor-pointer hover:bg-muted">
-          <FaGithub className=" text-muted-foreground" /> Export
-        </div>
+        <ExportPopover projectId={projectId} />
       </div>
       {tab === "code" ? (
         <CodeEditorView projectId={projectId} />

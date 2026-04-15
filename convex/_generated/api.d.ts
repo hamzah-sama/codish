@@ -12,7 +12,6 @@ import type * as conversations from "../conversations.js";
 import type * as files from "../files.js";
 import type * as projects from "../projects.js";
 import type * as system from "../system.js";
-import type * as utils from "../utils.js";
 
 import type {
   ApiFromModules,
@@ -25,7 +24,6 @@ declare const fullApi: ApiFromModules<{
   files: typeof files;
   projects: typeof projects;
   system: typeof system;
-  utils: typeof utils;
 }>;
 
 /**
