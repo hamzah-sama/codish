@@ -13,7 +13,6 @@ import { createReadFilesTool } from "./tools/read-files";
 import { createListFilesTool } from "./tools/list-files";
 import { createUpdateFilesTool } from "./tools/update-files";
 import { createRenameFilesTool } from "./tools/rename-files";
-import { create } from "domain";
 import { CreateDeleteFilesTool } from "./tools/delete-files";
 import { createCreateFolderTool } from "./tools/create-folder";
 import { createCreateFilesTool } from "./tools/create-files";
