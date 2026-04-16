@@ -6,10 +6,15 @@ import {
 import { FaGithub } from "react-icons/fa";
 import { Id } from "../../../convex/_generated/dataModel";
 import {
-  useGetProjectExportStatus,
+  useGetProjectExportResult,
   useGetProjectName,
 } from "../utils/useProject";
-import { CheckCheckIcon, Loader2Icon, XCircleIcon } from "lucide-react";
+import {
+  CheckCheckIcon,
+  ExternalLinkIcon,
+  Loader2Icon,
+  XCircleIcon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import z from "zod";
 import { useForm } from "@tanstack/react-form";
@@ -27,6 +32,7 @@ import {
   SelectTrigger,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import Link from "next/link";
 
 interface Props {
   projectId: Id<"projects">;
@@ -47,7 +53,7 @@ const formSchema = z.object({
   visibility: z.enum(["public", "private"]),
 });
 export const ExportPopover = ({ projectId }: Props) => {
-  const exportStatus = useGetProjectExportStatus(projectId);
+  const exportResult = useGetProjectExportResult(projectId);
   const projectName = useGetProjectName(projectId);
   const { openUserProfile } = useClerk();
   const [open, setOpen] = useState(false);
@@ -114,20 +120,47 @@ export const ExportPopover = ({ projectId }: Props) => {
     setOpen(false);
   };
   const getStatusIcon = () => {
-    if (exportStatus === "exporting") {
+    if (exportResult?.status === "exporting") {
       return <Loader2Icon className="size-3.5 animate-spin" />;
     }
-    if (exportStatus === "completed") {
+    if (exportResult?.status === "completed") {
       return <CheckCheckIcon className="size-3.5 text-emerald-500" />;
     }
-    if (exportStatus === "failed") {
+    if (exportResult?.status === "failed") {
       return <XCircleIcon className="size-3.5 text-red-500" />;
     }
     return <FaGithub className=" text-muted-foreground" />;
   };
 
   const renderContent = () => {
-    if (exportStatus === "exporting") {
+    if (exportResult?.status === "completed" && exportResult.url) {
+      return (
+        <div className="flex flex-col items-center gap-3">
+          <XCircleIcon className="size-6 text-emerald-500" />
+          <p className="text-sm font-medium">Repository created</p>
+          <p className="text-xs text-muted-foreground">
+            Your project has been exported to GitHub
+          </p>
+          <div className="flex flex-col gap-2">
+            <Button asChild className="w-full">
+              <Link href={exportResult.url} target="_blank">
+                <ExternalLinkIcon className="size-3 mr-1" />
+                <span>View on GitHub</span>
+              </Link>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="w-full"
+              onClick={handleResetExport}
+            >
+              Reset
+            </Button>
+          </div>
+        </div>
+      );
+    }
+    if (exportResult?.status === "exporting") {
       return (
         <div className="flex flex-col items-center gap-3">
           <Loader2Icon className="size-6 animate-spin text-muted-foreground" />
@@ -144,13 +177,14 @@ export const ExportPopover = ({ projectId }: Props) => {
       );
     }
 
-    if (exportStatus === "failed") {
+    if (exportResult?.status === "failed") {
       return (
         <div className="flex flex-col items-center gap-3">
           <XCircleIcon className="size-6 text-rose-500" />
           <p className="text-sm font-medium">Export failed</p>
-          <p className="text-xs text-muted-foreground">
-            Something went wrong, please try again
+          <p className="text-xs text-muted-foreground text-center">
+            The repository name may already be taken or invalid. Please try a
+            different name and retry.
           </p>
           <Button
             size="sm"
@@ -269,10 +303,14 @@ export const ExportPopover = ({ projectId }: Props) => {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <div className="flex items-center gap-2 pl-2 pr-4 py-1 border-l cursor-pointer hover:bg-muted">
+        <Button
+          type="button"
+          variant="ghost"
+          className="flex items-center gap-2 pl-2 pr-4 py-1 border-l cursor-pointer rounded-none "
+        >
           {getStatusIcon()}
           <span className="text-sm">Export</span>
-        </div>
+        </Button>
       </PopoverTrigger>
       <PopoverContent className="w-80">{renderContent()}</PopoverContent>
     </Popover>

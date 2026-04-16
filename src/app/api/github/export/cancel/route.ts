@@ -30,6 +30,14 @@ export async function POST(request: Request) {
       { status: 500 },
     );
   }
+  const project = await convex.query(api.system.getProjectById, {
+    internalKey,
+    projectId: projectId as Id<"projects">,
+  });
+
+  if (!project || project.ownerId !== userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   const event = await inngest.send({
     name: "github/export.cancel",

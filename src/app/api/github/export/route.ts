@@ -1,7 +1,10 @@
 import { inngest } from "@/inngest/client";
+import { convex } from "@/lib/convex-client";
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import z from "zod";
+import { api } from "../../../../../convex/_generated/api";
+import { Id } from "../../../../../convex/_generated/dataModel";
 
 const requestSchema = z.object({
   repoName: z
@@ -29,6 +32,14 @@ export async function POST(request: Request) {
       { error: "server configuration error" },
       { status: 500 },
     );
+  }
+  const project = await convex.query(api.system.getProjectById, {
+    internalKey,
+    projectId: projectId as Id<"projects">,
+  });
+
+  if (!project || project.ownerId !== userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const event = await inngest.send({
