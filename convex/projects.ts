@@ -103,3 +103,11 @@ export const getProjectSettings = query({
     return project.settings;
   },
 });
+
+export const getProjectExportResult = query({
+  args: { id: v.id("projects") },
+  handler: async (ctx, args) => {
+    const project = await verifyAuthAndOwnership(ctx, args.id);
+    return { status: project.exportStatus, url: project.exportRepoUrl };
+  },
+});

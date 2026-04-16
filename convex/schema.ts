@@ -13,12 +13,23 @@ export default defineSchema({
         v.literal("failed"),
       ),
     ),
+    exportStatus: v.optional(
+      v.union(
+        v.literal("exporting"),
+        v.literal("completed"),
+        v.literal("failed"),
+        v.literal("cancelled"),
+      ),
+    ),
+    exportRepoUrl: v.optional(v.string()),
     settings: v.optional(
       v.object({
         installCommand: v.optional(v.string()),
         devCommand: v.optional(v.string()),
       }),
     ),
+    githubOwner: v.optional(v.string()),
+    githubRepo: v.optional(v.string()),
   })
     .index("by_owner", ["ownerId"])
     .index("by_updated_at", ["ownerId", "updatedAt"]),

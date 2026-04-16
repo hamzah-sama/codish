@@ -14,6 +14,10 @@ export const useGetProjectName = (projectId: Id<"projects">) => {
   return useQuery(api.projects.getProjectName, { id: projectId });
 };
 
+export const useGetProjectExportResult = (projectId: Id<"projects">) => {
+  return useQuery(api.projects.getProjectExportResult, { id: projectId });
+};
+
 export const useGetProjectStatus = (projectId: Id<"projects">) => {
   return useQuery(api.projects.getProjectStatus, { id: projectId });
 };

@@ -9,6 +9,7 @@ import {
   uniqueNamesGenerator,
 } from "unique-names-generator";
 import { useCreateProjects } from "../utils/useProject";
+import { useEffect } from "react";
 
 interface Props {
   setOpenDialog: (open: boolean) => void;
@@ -30,6 +31,20 @@ export const CreateProject = ({ setOpenDialog }: Props) => {
     });
     await createProject({ name: projectName });
   };
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "j" && (event.metaKey || event.ctrlKey)) {
+        event.preventDefault();
+        handleSubmit();
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [handleSubmit]);
   return (
     <Button
       onClick={handleSubmit}

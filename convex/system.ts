@@ -1,8 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { Id } from "./_generated/dataModel";
-import { file } from "zod";
-import { id } from "date-fns/locale";
 
 // validate internal key to prevent unauthorized access and not depend on convex auth
 const validateInternalKey = (key: string) => {
@@ -163,6 +161,17 @@ export const getProjectFiles = query({
   },
 });
 
+export const getProjectById = query({
+  args: {
+    internalKey: v.string(),
+    projectId: v.id("projects"),
+  },
+  handler: async (ctx, args) => {
+    validateInternalKey(args.internalKey);
+    return await ctx.db.get(args.projectId);
+  },
+});
+
 // used for agent to 'read file' tool, get file content by id
 export const getFileById = query({
   args: {
@@ -316,6 +325,50 @@ export const createFolder = mutation({
   },
 });
 
+export const createFile = mutation({
+  args: {
+    internalKey: v.string(),
+    projectId: v.id("projects"),
+    parentId: v.optional(v.id("files")),
+    name: v.string(),
+    content: v.string(),
+  },
+  handler: async (ctx, args) => {
+    validateInternalKey(args.internalKey);
+    const files = await ctx.db
+      .query("files")
+      .withIndex("by_project_parent", (q) =>
+        q.eq("projectId", args.projectId).eq("parentId", args.parentId),
+      )
+      .collect();
+
+    const existingFiles = files.find(
+      (file) => file.name === args.name && file.type === "file",
+    );
+
+    if (existingFiles) {
+      throw new Error(
+        `file with name ${args.name} already exist in this location`,
+      );
+    }
+
+    const newFileId = await ctx.db.insert("files", {
+      name: args.name,
+      parentId: args.parentId,
+      projectId: args.projectId,
+      type: "file",
+      content: args.content,
+      updatedAt: Date.now(),
+    });
+
+    await ctx.db.patch("projects", args.projectId, {
+      updatedAt: Date.now(),
+    });
+
+    return newFileId;
+  },
+});
+
 export const createFiles = mutation({
   args: {
     internalKey: v.string(),
@@ -360,5 +413,170 @@ export const createFiles = mutation({
     }
 
     return result;
+  },
+});
+
+export const createBinaryFile = mutation({
+  args: {
+    internalKey: v.string(),
+    projectId: v.id("projects"),
+    parentId: v.optional(v.id("files")),
+    name: v.string(),
+    storageId: v.id("_storage"),
+  },
+  handler: async (ctx, args) => {
+    validateInternalKey(args.internalKey);
+    const files = await ctx.db
+      .query("files")
+      .withIndex("by_project_parent", (q) =>
+        q.eq("projectId", args.projectId).eq("parentId", args.parentId),
+      )
+      .collect();
+
+    const existingFiles = files.find(
+      (file) => file.name === args.name && file.type === "file",
+    );
+
+    if (existingFiles) {
+      throw new Error(
+        `file with name ${args.name} already exist in this location`,
+      );
+    }
+
+    const newFileId = await ctx.db.insert("files", {
+      name: args.name,
+      parentId: args.parentId,
+      projectId: args.projectId,
+      type: "file",
+      storageId: args.storageId,
+      updatedAt: Date.now(),
+    });
+
+    await ctx.db.patch("projects", args.projectId, {
+      updatedAt: Date.now(),
+    });
+
+    return newFileId;
+  },
+});
+
+export const cleanUpFiles = mutation({
+  args: {
+    internalKey: v.string(),
+    projectId: v.id("projects"),
+  },
+  handler: async (ctx, args) => {
+    validateInternalKey(args.internalKey);
+    const files = await ctx.db
+      .query("files")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .collect();
+    for (const file of files) {
+      if (file.storageId) {
+        await ctx.storage.delete(file.storageId);
+      }
+      await ctx.db.delete(file._id);
+    }
+  },
+});
+
+export const updateImportStatus = mutation({
+  args: {
+    internalKey: v.string(),
+    projectId: v.id("projects"),
+    status: v.optional(
+      v.union(
+        v.literal("importing"),
+        v.literal("completed"),
+        v.literal("failed"),
+      ),
+    ),
+  },
+  handler: async (ctx, args) => {
+    validateInternalKey(args.internalKey);
+    await ctx.db.patch("projects", args.projectId, {
+      importStatus: args.status,
+      updatedAt: Date.now(),
+    });
+  },
+});
+
+export const createProjectByImport = mutation({
+  args: {
+    internalKey: v.string(),
+    name: v.string(),
+    ownerId: v.string(),
+    githubOwner: v.string(),
+    githubRepo: v.string(),
+  },
+  handler: async (ctx, args) => {
+    validateInternalKey(args.internalKey);
+    const projectId = await ctx.db.insert("projects", {
+      name: args.name,
+      ownerId: args.ownerId,
+      importStatus: "importing",
+      githubOwner: args.githubOwner,
+      githubRepo: args.githubRepo,
+      updatedAt: Date.now(),
+    });
+    return projectId;
+  },
+});
+
+export const generateUploadUrl = mutation({
+  args: {
+    internalKey: v.string(),
+  },
+  handler: async (ctx, args) => {
+    validateInternalKey(args.internalKey);
+    return await ctx.storage.generateUploadUrl();
+  },
+});
+
+export const updateExportStatus = mutation({
+  args: {
+    internalKey: v.string(),
+    projectId: v.id("projects"),
+    status: v.optional(
+      v.union(
+        v.literal("exporting"),
+        v.literal("completed"),
+        v.literal("failed"),
+        v.literal("cancelled"),
+      ),
+    ),
+    exportRepoUrl: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    validateInternalKey(args.internalKey);
+    await ctx.db.patch("projects", args.projectId, {
+      exportStatus: args.status,
+      updatedAt: Date.now(),
+      exportRepoUrl: args.exportRepoUrl,
+    });
+  },
+});
+
+export const getProjectwithUrl = query({
+  args: {
+    internalKey: v.string(),
+    projectId: v.id("projects"),
+  },
+  handler: async (ctx, args) => {
+    validateInternalKey(args.internalKey);
+    const files = await ctx.db
+      .query("files")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .collect();
+
+    return await Promise.all(
+      files.map(async (file) => {
+        if (file.storageId) {
+          const url = await ctx.storage.getUrl(file.storageId);
+          return { ...file, storageUrl: url };
+        }
+        return { ...file, storageUrl: null };
+      }),
+    );
   },
 });
