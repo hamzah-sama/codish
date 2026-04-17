@@ -9,27 +9,22 @@ import {
   uniqueNamesGenerator,
 } from "unique-names-generator";
 import { useCreateProjects } from "../utils/useProject";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 interface Props {
   setOpenDialog: (open: boolean) => void;
+  setOpenPrompt: (open: boolean) => void;
 }
 
-export const CreateProject = ({ setOpenDialog }: Props) => {
+export const CreateProject = ({ setOpenDialog, setOpenPrompt }: Props) => {
   const { isSignedIn } = useUser();
-  const createProject = useCreateProjects();
 
   const handleSubmit = async () => {
     if (!isSignedIn) {
       setOpenDialog(true);
       return;
     }
-    const projectName = uniqueNamesGenerator({
-      dictionaries: [adjectives, animals, colors],
-      separator: "-",
-      length: 3,
-    });
-    await createProject({ name: projectName });
+    setOpenPrompt(true);
   };
 
   useEffect(() => {

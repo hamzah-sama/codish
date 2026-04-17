@@ -1,6 +1,8 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { Id } from "./_generated/dataModel";
+import { convex } from "@/lib/convex-client";
+import { api } from "./_generated/api";
 
 // validate internal key to prevent unauthorized access and not depend on convex auth
 const validateInternalKey = (key: string) => {
@@ -578,5 +580,31 @@ export const getProjectwithUrl = query({
         return { ...file, storageUrl: null };
       }),
     );
+  },
+});
+
+export const createProjectWithPrompt = mutation({
+  args: {
+    internalKey: v.string(),
+    projectName: v.string(),
+    ownerId: v.string(),
+    conversationTitle: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const now = Date.now();
+    validateInternalKey(args.internalKey);
+    const projectId = await ctx.db.insert("projects", {
+      name: args.projectName,
+      updatedAt: now,
+      ownerId: args.ownerId,
+    });
+
+    const conversationId = await ctx.db.insert("conversations", {
+      projectId,
+      updatedAt: now,
+      title: args.conversationTitle,
+    });
+
+    return { conversationId, projectId };
   },
 });
