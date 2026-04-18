@@ -6,7 +6,7 @@ import {
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import { Doc } from "../../../convex/_generated/dataModel";
-import React, { useState } from "react";
+import React from "react";
 import { setPadding } from "./utils/set-padding";
 
 interface Props {

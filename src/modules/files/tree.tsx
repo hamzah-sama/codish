@@ -27,6 +27,8 @@ export const Tree = ({ level, file }: Props) => {
   const [openDeleteModal, setOPenDeleteModal] = useState(false);
   const [creating, setCreating] = useState<"file" | "folder" | null>(null);
   const [renaming, setRenaming] = useState(false);
+  const { getTabs, closeTab } = useEditorStore();
+  const { activeTabId } = getTabs(file.projectId);
   const { openFile } = useEditorStore();
   const deleteFile = useDeleteFile({
     projectId: file.projectId,
@@ -49,7 +51,7 @@ export const Tree = ({ level, file }: Props) => {
         parentId: file._id,
         content: "",
       });
-      openFile(file.projectId, newFile, { pinned: false});
+      openFile(file.projectId, newFile, { pinned: false });
     } else if (creating === "folder") {
       createFolder({ name, projectId: file.projectId, parentId: file._id });
     }
@@ -69,7 +71,12 @@ export const Tree = ({ level, file }: Props) => {
         openDeleteModal={openDeleteModal}
         setRenaming={setRenaming}
         renaming={renaming}
-        deleteFile={() => deleteFile({ fileId: file._id })}
+        deleteFile={() => {
+          if (activeTabId === file._id) {
+            closeTab(file.projectId, file._id);
+          }
+          deleteFile({ fileId: file._id });
+        }}
       />
     );
   }

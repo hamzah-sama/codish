@@ -96,6 +96,12 @@ export async function POST(request: Request) {
       model: openai("gpt-4.1-mini"),
       output: Output.object({ schema: quickEditSchema }),
       prompt,
+      experimental_telemetry: {
+        isEnabled: true,
+        recordInputs: true,
+        functionId: "quick-edit",
+        recordOutputs: true,
+      },
     });
 
     return NextResponse.json({ editedCode: output.editedcode });
