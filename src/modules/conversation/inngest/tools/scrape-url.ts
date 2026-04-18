@@ -40,7 +40,10 @@ export const createScrapeUrlTool = () => {
                 formats: ["markdown"],
               });
               if (result.markdown) {
-                results.push({ url, content: result.markdown.slice(0, MAX_MARKDOWN_CHARS) });
+                results.push({
+                  url,
+                  content: result.markdown.slice(0, MAX_MARKDOWN_CHARS),
+                });
               }
             } catch (error) {
               results.push({ url, content: `failed to scrape URl ${url}` });
