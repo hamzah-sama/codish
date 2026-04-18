@@ -74,6 +74,12 @@ export async function POST(request: Request) {
       model: openai("gpt-4.1-mini"),
       output: Output.object({ schema: suggestionSchema }),
       prompt,
+      experimental_telemetry: {
+        isEnabled: true,
+        functionId: "suggestion",
+        recordInputs: true,
+        recordOutputs: true,
+      },
     });
 
     return NextResponse.json({ suggestion: output.suggestion });

@@ -19,6 +19,7 @@ import { useState } from "react";
 import { Id } from "../../../convex/_generated/dataModel";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { trim } from "zod";
 
 interface Props {
   open: boolean;
@@ -26,17 +27,18 @@ interface Props {
 }
 export const CreateProjectDialog = ({ open, onOpenChange }: Props) => {
   const [prompt, setPrompt] = useState("");
-  const [isSubmitting, setISSubmitting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (message: PromptInputMessage) => {
-    if (!message.text) return;
-    setISSubmitting(true);
+    const trimmedPrompt = message.text.trim();
+    if (!trimmedPrompt) return;
+    setIsSubmitting(true);
     try {
       const { projectId } = await ky
         .post("/api/create-project-with-prompt", {
           json: {
-            prompt: message.text.trim(),
+            prompt: trimmedPrompt,
           },
         })
         .json<{ projectId: Id<"projects"> }>();
@@ -48,7 +50,7 @@ export const CreateProjectDialog = ({ open, onOpenChange }: Props) => {
     } catch (error) {
       toast.error("failed to create project");
     } finally {
-      setISSubmitting(false);
+      setIsSubmitting(false);
     }
   };
   return (
@@ -73,7 +75,7 @@ export const CreateProjectDialog = ({ open, onOpenChange }: Props) => {
           </PromptInputBody>
           <PromptInputFooter>
             <PromptInputTools />
-            <PromptInputSubmit disabled={isSubmitting || !prompt} />
+            <PromptInputSubmit disabled={isSubmitting || !prompt.trim()} />
           </PromptInputFooter>
         </PromptInput>
       </DialogContent>
