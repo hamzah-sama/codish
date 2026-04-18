@@ -2,8 +2,13 @@ import { firecrawl } from "@/lib/firecrawl";
 import { createTool } from "@inngest/agent-kit";
 import z from "zod";
 
+const MAX_URLS = 5;
+const MAX_MARKDOWN_CHARS = 20000;
 const paramsSchema = z.object({
-  urls: z.array(z.url("invalid url format")).min(1, "provide at least one url"),
+  urls: z
+    .array(z.url("invalid url format"))
+    .min(1, "provide at least one url")
+    .max(MAX_URLS, `scrape at most ${MAX_URLS} URLs at a time`),
 });
 
 export const createScrapeUrlTool = () => {
@@ -24,6 +29,10 @@ export const createScrapeUrlTool = () => {
 
       try {
         return await toolStep?.run("scrape-url", async () => {
+          if (!toolStep.run) {
+            return "Error: step context not available";
+          }
+
           const results: { url: string; content: string }[] = [];
           for (const url of urls) {
             try {
@@ -31,7 +40,7 @@ export const createScrapeUrlTool = () => {
                 formats: ["markdown"],
               });
               if (result.markdown) {
-                results.push({ url, content: result.markdown });
+                results.push({ url, content: result.markdown.slice(0, MAX_MARKDOWN_CHARS) });
               }
             } catch (error) {
               results.push({ url, content: `failed to scrape URl ${url}` });

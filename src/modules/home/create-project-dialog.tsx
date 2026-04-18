@@ -19,6 +19,7 @@ import { useState } from "react";
 import { Id } from "../../../convex/_generated/dataModel";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { trim } from "zod";
 
 interface Props {
   open: boolean;
@@ -74,7 +75,7 @@ export const CreateProjectDialog = ({ open, onOpenChange }: Props) => {
           </PromptInputBody>
           <PromptInputFooter>
             <PromptInputTools />
-            <PromptInputSubmit disabled={isSubmitting || !prompt} />
+            <PromptInputSubmit disabled={isSubmitting || !prompt.trim()} />
           </PromptInputFooter>
         </PromptInput>
       </DialogContent>
