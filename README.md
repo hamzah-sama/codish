@@ -1,257 +1,153 @@
-# Codish - Build a Cursor AI Alternative
+# Codish
 
+AI-powered code editor inspired by modern developer tools like Cursor.
 
+Codish is a browser-based development environment focused on AI-assisted coding workflows, real-time interaction, and modern developer experience. Built with a full-stack TypeScript architecture using Next.js, CodeMirror, WebContainers, and AI SDK integrations.
 
-## What We're Building
+---
 
-Codish is a browser-based IDE inspired by Cursor AI, featuring:
+## Features
 
-- Real-time collaborative code editing
-- AI-powered code suggestions and quick edit (Cmd+K)
-- Conversation-based AI assistant
-- In-browser code execution with WebContainer
-- GitHub import/export integration
-- Multi-file project management
+- AI-powered code generation and editing assistance
+- Multi-language code editor support
+- Browser-based development environment
+- Integrated terminal experience with xterm.js
+- Real-time streaming AI responses
+- Persistent workspace and editor state
+- Markdown, code, math, and Mermaid rendering support
+- Modern IDE-style responsive interface
+- Authentication and workspace management
+
+---
+
+## Supported Languages
+
+- JavaScript
+- TypeScript
+- Python
+- Go
+- Rust
+- Java
+- C++
+- SQL
+- HTML/CSS
+- PHP
+- YAML
+- Markdown
+- XML
+
+---
 
 ## Tech Stack
 
-| Category      | Technologies                                                |
-| ------------- | ----------------------------------------------------------- |
-| **Frontend**  | Next.js 16, React 19, TypeScript, Tailwind CSS 4            |
-| **Editor**    | CodeMirror 6, Custom Extensions, One Dark Theme             |
-| **Backend**   | Convex (Real-time DB), Inngest (Background Jobs)            |
-| **AI**        | Claude Sonnet 4 (preferred) or Gemini 2.0 Flash (free tier) |
-| **Auth**      | Clerk (with GitHub OAuth)                                   |
-| **Execution** | WebContainer API, xterm.js                                  |
-| **UI**        | shadcn/ui, Radix UI                                         |
+### Frontend
+- React 19
+- Next.js 16
+- TypeScript
+- Tailwind CSS
+- shadcn/ui
+- Zustand
+- Framer Motion
 
-## Part 1 Contents (Chapters 1-12)
+### Editor & Developer Tooling
+- CodeMirror 6
+- WebContainers API
+- xterm.js
+- Replit Minimap
 
-### Phase 1: Foundation & Sponsor Technologies
+### AI & Backend Services
+- OpenAI SDK
+- Google AI SDK
+- AI SDK
+- Inngest
+- Convex
 
-- **Chapter 1:** Project Setup, UI Library & Theme
-- **Chapter 2:** Clerk Authentication & Protected Routes
-- **Chapter 3:** Convex Database & Real-time Setup
-- **Chapter 4:** Inngest - Background Jobs & Non-Blocking UI
-- **Chapter 5:** Firecrawl - Teaching AI with Live Documentation
-- **Chapter 6:** Sentry - Error Tracking & LLM Monitoring
-- **Chapter 7:** Projects Dashboard & Landing Page
+### Additional Libraries
+- Streamdown
+- Mermaid Rendering
+- Octokit
+- TanStack Form
+- Zod
 
-### Phase 2: File System & Editor
+---
 
-- **Chapter 8:** Project IDE Layout & Resizable Panes
-- **Chapter 9:** File Explorer - Full Implementation
-- **Chapter 10:** Code Editor & State Management
+## Architecture Highlights
 
-### Phase 3: AI Features (Partial)
+- Browser-based execution environments powered by WebContainers
+- Modular AI workflow orchestration using AI SDK and Inngest
+- Streaming-first interaction patterns for responsive AI experiences
+- Multi-language editor architecture using CodeMirror extensions
+- Scalable component-driven frontend structure
+- Type-safe validation and state management patterns
 
-- **Chapter 11:** AI Suggestions & Quick Edit
-- **Chapter 12:** Conversation System
-
-## Part 2 Contents (Chapters 13-16) - Coming Soon
-
-- **Chapter 13:** AI Agent & Tools (AgentKit, file management tools)
-- **Chapter 14:** WebContainer, Terminal & Preview
-- **Chapter 15:** GitHub Import & Export
-- **Chapter 16:** AI Project Creation & Final Polish
+---
 
 ## Getting Started
 
-### Prerequisites
-
-- Node.js 20.09+
-- npm or pnpm
-- Accounts needed:
-  - [Clerk](https://cwa.run/clerk) - Authentication
-  - [Convex](https://cwa.run/convex) - Database
-  - [Inngest](https://cwa.run/inngest) - Background jobs
-  - [Anthropic](https://anthropic.com) or [Google AI Studio](https://aistudio.google.com) - AI API (one required)
-  - [Firecrawl](https://cwa.run/firecrawl) - Web scraping (optional)
-  - [Sentry](https://cwa.run/sentry) - Error tracking (optional)
-
-### Installation
-
-1. Clone the repository:
-
-   ```bash
-   git clone https://github.com/code-with-antonio/Codish.git
-   cd Codish
-   ```
-
-2. Install dependencies:
-
-   ```bash
-   npm install
-   ```
-
-3. Set up environment variables:
-
-   ```bash
-   cp .env.example .env.local
-   ```
-
-4. Configure your `.env.local` with the required keys:
-
-   ```env
-   # Clerk
-   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
-   CLERK_SECRET_KEY=
-
-   # Convex
-   NEXT_PUBLIC_CONVEX_URL=
-   CONVEX_DEPLOYMENT=
-   Codish_CONVEX_INTERNAL_KEY=  # Generate a random string
-
-   # AI Provider (choose one)
-   ANTHROPIC_API_KEY=        # Preferred - Claude Sonnet 4
-   GOOGLE_GENERATIVE_AI_API_KEY=  # Free alternative - Gemini 2.0 Flash
-
-   # Firecrawl (optional)
-   FIRECRAWL_API_KEY=
-
-   # Sentry (optional)
-   SENTRY_DSN=
-   ```
-
-5. Start the Convex development server:
-
-   ```bash
-   npx convex dev
-   ```
-
-6. In a new terminal, start the Next.js development server:
-
-   ```bash
-   npm run dev
-   ```
-
-7. In another terminal, start the Inngest dev server:
-
-   ```bash
-   npx inngest-cli@latest dev
-   ```
-
-8. Open [http://localhost:3000](http://localhost:3000)
-
-## Project Structure
-
-```
-src/
-├── app/                    # Next.js App Router
-│   ├── api/               # API routes
-│   │   ├── messages/      # Conversation API
-│   │   ├── suggestion/    # AI suggestions
-│   │   └── quick-edit/    # Cmd+K editing
-│   └── projects/          # Project pages
-├── components/            # Shared components
-│   ├── ui/               # shadcn/ui components
-│   └── ai-elements/      # AI conversation components
-├── features/
-│   ├── auth/             # Authentication
-│   ├── conversations/    # AI chat system
-│   ├── editor/           # CodeMirror setup
-│   │   └── extensions/   # Custom extensions
-│   ├── preview/          # WebContainer (Part 2)
-│   └── projects/         # Project management
-├── inngest/              # Inngest client
-└── lib/                  # Utilities
-
-convex/
-├── schema.ts             # Database schema
-├── projects.ts           # Project queries/mutations
-├── files.ts              # File operations
-├── conversations.ts      # Conversation operations
-└── system.ts             # Internal API for Inngest
-```
-
-## Features Implemented (Part 1)
-
-### Editor
-
-- Syntax highlighting for JS, TS, CSS, HTML, JSON, Markdown, Python
-- Line numbers and code folding
-- Minimap overview
-- Bracket matching and indentation guides
-- Multi-cursor editing
-
-### AI Features
-
-- Real-time code suggestions with ghost text
-- Quick edit with Cmd+K (select code + natural language instruction)
-- Selection tooltip for quick actions
-- Conversation sidebar with message history
-
-### File Management
-
-- File explorer with folder hierarchy
-- Create, rename, delete files and folders
-- VSCode-style file icons
-- Tab-based file navigation
-- Auto-save with debouncing
-
-### Real-time
-
-- Convex-powered instant updates
-- Optimistic UI updates
-- Background job processing with Inngest
-
-## Current Limitations (Part 1)
-
-These features are planned for Part 2:
-
-- AI agent cannot yet modify files (mock response only)
-- No message cancellation
-- No past conversations dialog
-- No code preview/execution
-- No GitHub integration
-- No AI project generation
-
-## Scripts
+### Clone the repository
 
 ```bash
-npm run dev       # Start development server
-npm run build     # Build for production
-npm run start     # Start production server
-npm run lint      # Run ESLint
+git clone https://github.com/hamzah-sama/codish.git
+cd codish
 ```
 
-## Tutorial Links
+### Install dependencies
 
-- **YouTube Playlist:** [Coming Soon]
-- **Part 1:** Chapters 1-12
-- **Part 2:** Chapters 13-16
+```bash
+npm install
+```
 
-## Sponsors
+### Configure environment variables
 
-A huge thank you to the sponsors who made this tutorial possible. Consider checking them out - they offer generous free tiers perfect for learning!
+Create a `.env` file:
 
-### Authentication
+```env
+CONVEX_DEPLOYMENT=
+NEXT_PUBLIC_CONVEX_URL=
+CODISH_CONVEX_INTERNAL_KEY=
 
-**[Clerk](https://cwa.run/clerk)** - Add authentication to your app in minutes, not days.
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
+CLERK_SECRET_KEY=
+CLERK_JWT_ISSUER_DOMAIN=
+FIRECRAWL_API_KEY=
 
-### Database
 
-**[Convex](https://cwa.run/convex)** - The real-time database that makes building collaborative apps a breeze.
+GOOGLE_GENERATIVE_AI_API_KEY =
 
-### Background Jobs
+OPENAI_API_KEY=
+NEXT_PUBLIC_CONVEX_SITE_URL=
 
-**[Inngest](https://cwa.run/inngest)** - Reliable background jobs and event-driven workflows.
+SENTRY_AUTH_TOKEN=
 
-### Web Scraping
+```
 
-**[Firecrawl](https://cwa.run/firecrawl)** - Turn any website into LLM-ready data.
+### Run the development server
 
-### Error Tracking
+```bash
+npm run dev
+```
 
-**[Sentry](https://cwa.run/sentry)** - See what's broken and fix it fast.
+---
 
-### Code Review
+## Project Goals
 
-**[CodeRabbit](https://cwa.run/coderabbit)** - AI-powered code reviews that catch bugs before your users do.
+Codish was built to explore:
+- AI-native developer tooling
+- browser-based coding environments
+- real-time AI interaction patterns
+- scalable frontend architecture
+- modern TypeScript application design
 
-## Acknowledgments
+The project focuses heavily on developer experience, interactive UI systems, and AI-assisted workflows inspired by next-generation coding platforms.
 
-- [Cursor](https://cursor.sh) - Inspiration for the project
-- [Orchids](https://orchids.app) - Inspiration for the project
-- [shadcn/ui](https://ui.shadcn.com) - UI components
-- [CodeMirror](https://codemirror.net) - Code editor
+---
+
+## Status
+
+Actively developed and continuously improved.
+
+---
+
+## License
+
+MIT
